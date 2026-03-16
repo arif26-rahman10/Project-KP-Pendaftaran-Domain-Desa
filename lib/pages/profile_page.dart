@@ -6,6 +6,7 @@ import 'home_page.dart';
 import 'informasi_instansi_page.dart';
 import 'login_page.dart';
 import 'faktur_page.dart';
+import '../widgets/app_bottom_nav.dart';
 
 class ProfilePage extends StatefulWidget {
   final String fullName;
@@ -463,33 +464,12 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(
-          0,
-          12,
-          0,
-          bottomSafe > 0 ? bottomSafe : 12,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Colors.grey.shade200)),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 8,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navItem(Icons.home, 'Beranda', 0),
-            _navItem(Icons.language, 'Domain', 1),
-            _navItem(Icons.receipt_long, 'Faktur', 2),
-            _navItem(Icons.person_outline, 'Profil', 3),
-          ],
-        ),
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: 3,
+        fullName: nameController.text.trim().isEmpty
+            ? widget.fullName
+            : nameController.text.trim(),
+        username: widget.username,
       ),
     );
   }

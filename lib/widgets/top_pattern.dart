@@ -9,9 +9,7 @@ class TopPattern extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: 100,
-      child: CustomPaint(
-        painter: PatternPainter(),
-      ),
+      child: CustomPaint(painter: PatternPainter()),
     );
   }
 }

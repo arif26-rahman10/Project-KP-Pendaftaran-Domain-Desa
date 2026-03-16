@@ -97,9 +97,9 @@ class _LoginPageState extends State<LoginPage> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login berhasil')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Login berhasil')));
 
       Navigator.pushReplacement(
         context,
@@ -150,10 +150,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 12),
                 const Text(
                   'Selamat Datang di Nama Aplikasi',
-                  style: TextStyle(
-                    color: kPrimary,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: kPrimary, fontSize: 14),
                 ),
                 const SizedBox(height: 28),
                 CustomField(
@@ -225,9 +222,7 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const RegisterPage(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
                       );
                     },
                     child: RichText(
