@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static const baseUrl = "http://localhost:8000/api";
+  //kalau pakai hp masukkan ip ngrok
 
   static Future<Map<String, dynamic>> login(
     String username,
