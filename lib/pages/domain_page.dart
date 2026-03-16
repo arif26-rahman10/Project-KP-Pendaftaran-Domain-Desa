@@ -3,6 +3,10 @@ import '../main.dart';
 import 'home_page.dart';
 import 'profile_page.dart';
 import 'faktur_page.dart';
+import 'notifikasi_page.dart';
+import 'daftar_domain_page.dart';
+import 'pendaftaran_domain_page.dart';
+import 'verifikasi_dokumen_page.dart';
 
 class DomainPage extends StatefulWidget {
   final String fullName;
@@ -58,9 +62,7 @@ class _DomainPageState extends State<DomainPage> {
   }) {
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 280, // batas lebar card
-        ),
+        constraints: const BoxConstraints(maxWidth: 280),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: onTap,
@@ -160,9 +162,10 @@ class _DomainPageState extends State<DomainPage> {
                       color: Colors.black87,
                     ),
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Notifikasi belum tersedia'),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const NotifikasiPage(),
                         ),
                       );
                     },
@@ -186,37 +189,45 @@ class _DomainPageState extends State<DomainPage> {
                     ),
                   ),
                   const SizedBox(height: 30),
+
                   _domainCard(
                     icon: Icons.fact_check_outlined,
                     title: 'Daftar Domain',
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Menu Daftar Domain diklik'),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DaftarDomainPage(),
                         ),
                       );
                     },
                   ),
+
                   const SizedBox(height: 30),
+
                   _domainCard(
                     icon: Icons.language,
                     title: 'Pendaftaran Domain',
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Menu Pendaftaran Domain diklik'),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PendaftaranDomainPage(),
                         ),
                       );
                     },
                   ),
+
                   const SizedBox(height: 30),
+
                   _domainCard(
                     icon: Icons.verified_outlined,
                     title: 'Verifikasi Dokumen',
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Menu Verifikasi Dokumen diklik'),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const VerifikasiDokumenPage(),
                         ),
                       );
                     },

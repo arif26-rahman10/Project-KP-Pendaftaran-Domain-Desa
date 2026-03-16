@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import 'detail_faktur_page.dart';
 import 'home_page.dart';
 import 'domain_page.dart';
 import 'profile_page.dart';
+import 'notifikasi_page.dart';
 
 class FakturPage extends StatefulWidget {
   final String fullName;
   final String username;
 
-  const FakturPage({
-    super.key,
-    required this.fullName,
-    required this.username,
-  });
+  const FakturPage({super.key, required this.fullName, required this.username});
 
   @override
   State<FakturPage> createState() => _FakturPageState();
@@ -28,20 +26,16 @@ class _FakturPageState extends State<FakturPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => HomePage(
-            fullName: widget.fullName,
-            username: widget.username,
-          ),
+          builder: (_) =>
+              HomePage(fullName: widget.fullName, username: widget.username),
         ),
       );
     } else if (index == 1) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => DomainPage(
-            fullName: widget.fullName,
-            username: widget.username,
-          ),
+          builder: (_) =>
+              DomainPage(fullName: widget.fullName, username: widget.username),
         ),
       );
     } else if (index == 2) {
@@ -52,10 +46,8 @@ class _FakturPageState extends State<FakturPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => ProfilePage(
-            fullName: widget.fullName,
-            username: widget.username,
-          ),
+          builder: (_) =>
+              ProfilePage(fullName: widget.fullName, username: widget.username),
         ),
       );
     }
@@ -65,44 +57,61 @@ class _FakturPageState extends State<FakturPage> {
     required String invoice,
     required String tglTerbit,
     required String tglKadaluarsa,
+    required String namaDomain,
+    required String jenisAplikasi,
+    required String durasi,
+    required String harga,
     bool grey = false,
   }) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: grey ? Colors.grey.shade300 : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: Offset(0, 4),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "INVOICE",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DetailFakturPage(
+              fullName: widget.fullName,
+              username: widget.username,
+              invoiceNumber: invoice,
+              tanggalTerbit: tglTerbit,
+              tanggalKadaluarsa: tglKadaluarsa,
+              namaDomain: namaDomain,
+              jenisAplikasi: jenisAplikasi,
+              durasi: durasi,
+              harga: harga,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            invoice,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: grey ? Colors.grey.shade300 : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 4),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text("Tanggal Terbit : $tglTerbit"),
-          Text("Tanggal Kadaluarsa : $tglKadaluarsa"),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "INVOICE",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            const SizedBox(height: 6),
+            Text(invoice, style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Text("Tanggal Terbit : $tglTerbit"),
+            Text("Tanggal Kadaluarsa : $tglKadaluarsa"),
+          ],
+        ),
       ),
     );
   }
@@ -115,11 +124,7 @@ class _FakturPageState extends State<FakturPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: isActive ? kPrimary : Colors.grey,
-            size: 22,
-          ),
+          Icon(icon, color: isActive ? kPrimary : Colors.grey, size: 22),
           const SizedBox(height: 4),
           Text(
             label,
@@ -144,7 +149,6 @@ class _FakturPageState extends State<FakturPage> {
         children: [
           SizedBox(height: topSafe + 12),
 
-          /// HEADER
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
             child: Row(
@@ -173,14 +177,20 @@ class _FakturPageState extends State<FakturPage> {
                       size: 23,
                       color: Colors.black87,
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const NotifikasiPage(),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
             ),
           ),
 
-          /// LIST FAKTUR
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
@@ -190,11 +200,19 @@ class _FakturPageState extends State<FakturPage> {
                     invoice: "INV-023",
                     tglTerbit: "xx/xx/xxxx",
                     tglKadaluarsa: "xx/xx/xxxx",
+                    namaDomain: "xxx.desa.id",
+                    jenisAplikasi: "Registrasi",
+                    durasi: "1 Tahun",
+                    harga: "Rp.50.000",
                   ),
                   _invoiceCard(
                     invoice: "INV-022",
                     tglTerbit: "xx/xx/xxxx",
                     tglKadaluarsa: "xx/xx/xxxx",
+                    namaDomain: "xxx.desa.id",
+                    jenisAplikasi: "Registrasi",
+                    durasi: "1 Tahun",
+                    harga: "Rp.50.000",
                     grey: true,
                   ),
                 ],
@@ -204,7 +222,6 @@ class _FakturPageState extends State<FakturPage> {
         ],
       ),
 
-      /// BOTTOM NAVIGATION
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(
           0,
@@ -214,9 +231,7 @@ class _FakturPageState extends State<FakturPage> {
         ),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey.shade200),
-          ),
+          border: Border(top: BorderSide(color: Colors.grey.shade200)),
           boxShadow: const [
             BoxShadow(
               color: Colors.black12,

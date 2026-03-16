@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'pages/login_page.dart';
+import 'pages/splash_screen_page.dart';
+
+const Color kPrimary = Color(0xFFAF252B);
+const Color kBg = Color(0xFFF3F3F3);
 
 void main() {
   runApp(const MyApp());
 }
-
-const Color kPrimary = Color(0xFFBE202E);
-const Color kBg = Color.fromARGB(255, 245, 244, 244);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,17 +14,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Pendaftaran Domain Desa',
       debugShowCheckedModeBanner: false,
+      title: 'Pendaftaran Domain Desa',
       theme: ThemeData(
-        useMaterial3: true,
         scaffoldBackgroundColor: kBg,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: kPrimary,
-          primary: kPrimary,
-        ),
       ),
-      home: const LoginPage(),
+      home: const SplashScreenPage(),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'home_page.dart';
 import 'informasi_instansi_page.dart';
 import 'login_page.dart';
 import 'faktur_page.dart';
+import 'notifikasi_page.dart';
 import '../widgets/app_bottom_nav.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -225,32 +226,9 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _navItem(IconData icon, String label, int index) {
-    final isActive = currentIndex == index;
-
-    return InkWell(
-      onTap: () => _onTapNav(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: isActive ? kPrimary : Colors.grey, size: 22),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isActive ? kPrimary : Colors.grey,
-              fontSize: 11,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final topSafe = MediaQuery.of(context).padding.top;
-    final bottomSafe = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: kBg,
@@ -296,9 +274,10 @@ class _ProfilePageState extends State<ProfilePage> {
                           size: 22,
                         ),
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Notifikasi belum tersedia'),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotifikasiPage(),
                             ),
                           );
                         },
