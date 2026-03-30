@@ -6,7 +6,7 @@ void main() {
 }
 
 const Color kPrimary = Color(0xFFBE202E);
-const Color kBg = Color.fromARGB(255, 245, 244, 244);
+const Color kBg = Color.fromARGB(255, 255, 253, 253);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

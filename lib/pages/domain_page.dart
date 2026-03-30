@@ -58,9 +58,7 @@ class _DomainPageState extends State<DomainPage> {
   }) {
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 280, // batas lebar card
-        ),
+        constraints: const BoxConstraints(maxWidth: 280),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: onTap,

@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import '../main.dart';
 import '../services/local_auth_service.dart';
+import '../services/api_service.dart';
 import '../widgets/custom_field.dart';
 import '../widgets/support_logo.dart';
 import '../widgets/top_pattern.dart';
@@ -19,6 +23,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController passwordController = TextEditingController();
 
   bool rememberMe = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -47,19 +52,12 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(
           builder: (_) => HomePage(
-            fullName: user['fullName'] ?? 'Pengguna',
+            fullName: user['name'] ?? user['name'] ?? 'Pengguna',
             username: user['username'] ?? '-',
           ),
         ),
       );
     }
-  }
-
-  @override
-  void dispose() {
-    usernameController.dispose();
-    passwordController.dispose();
-    super.dispose();
   }
 
   Future<void> _login() async {
@@ -73,47 +71,44 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final hasAccount = await LocalAuthService.hasRegisteredUser();
-    if (!hasAccount) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Akun belum terdaftar. Silakan registrasi dulu'),
-        ),
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Memanggil ApiService
+      final result = await ApiService.login(
+        username: username,
+        password: password,
       );
-      return;
-    }
 
-    final success = await LocalAuthService.login(
-      username: username,
-      password: password,
-      rememberMe: rememberMe,
-    );
+      if (result['success'] == true) {
+        final user = result['user'];
 
-    if (!mounted) return;
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Login berhasil')));
 
-    if (success) {
-      final user = await LocalAuthService.getRegisteredUser();
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Login berhasil')));
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => HomePage(
-            fullName: user['fullName'] ?? 'Pengguna',
-            username: user['username'] ?? '-',
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HomePage(
+              fullName: user['name'] ?? 'Pengguna',
+              username: user['username'] ?? '-',
+            ),
           ),
-        ),
-      );
-    } else {
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Username atau password salah')),
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -206,14 +201,23 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    onPressed: _login,
-                    child: const Text(
-                      'Masuk',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
+                    onPressed: _isLoading ? null : _login,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Masuk',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 18),
