@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import 'domain_page.dart';
 import 'faktur_page.dart';
-import 'login_page.dart';
 import 'profile_page.dart';
+import 'pendaftaran_domain_page.dart';
+import 'notifikasi_page.dart';
 
 class HomePage extends StatefulWidget {
   final String fullName;
@@ -29,6 +30,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _goToNotifikasiPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotifikasiPage()),
+    );
+  }
+
+  void _goToPendaftaranDomainPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PendaftaranDomainPage()),
+    );
+  }
+
   @override
   void dispose() {
     domainController.dispose();
@@ -46,7 +61,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           Container(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(24, topSafe + 24, 24, 78),
+            padding: EdgeInsets.fromLTRB(24, topSafe + 10, 24, 24),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFFE01925), Color(0xFF91131C)],
@@ -55,24 +70,52 @@ class _HomePageState extends State<HomePage> {
               ),
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(26)),
             ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Selamat Datang\n${widget.fullName}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 24,
-                  height: 1.35,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Spacer(),
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.20),
+                        borderRadius: BorderRadius.circular(21),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(
+                          Icons.notifications_none,
+                          size: 23,
+                          color: Colors.white,
+                        ),
+                        onPressed: _goToNotifikasiPage,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 4),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Selamat Datang\n${widget.fullName}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 24,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+
           Transform.translate(
-            offset: const Offset(0, -42),
+            offset: const Offset(0, -18),
             child: Container(
               width: MediaQuery.of(context).size.width * 0.72,
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: const Color(0xFFF0E8E8),
                 borderRadius: BorderRadius.circular(18),
@@ -92,7 +135,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     widget.username,
                     style: const TextStyle(
-                      fontSize: 26,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -100,6 +143,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
@@ -112,7 +156,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 12),
 
-                  /// SEARCH DOMAIN
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -153,7 +196,6 @@ class _HomePageState extends State<HomePage> {
 
                   const SizedBox(height: 18),
 
-                  /// HASIL CEK DOMAIN
                   Row(
                     children: [
                       const Expanded(
@@ -185,7 +227,7 @@ class _HomePageState extends State<HomePage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          onPressed: () {},
+                          onPressed: _goToPendaftaranDomainPage,
                           child: const Text(
                             'Daftar',
                             style: TextStyle(fontWeight: FontWeight.w600),
@@ -196,17 +238,21 @@ class _HomePageState extends State<HomePage> {
                   ),
 
                   const SizedBox(height: 28),
+
                   const Text(
                     'Informasi',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 12),
+
                   _infoCard(
                     icon: Icons.menu_book_outlined,
                     title: 'Persyaratan Pendaftaran',
                     subtitle: 'lihat selengkapnya disini',
                   ),
+
                   const SizedBox(height: 14),
+
                   _sopCard(),
                 ],
               ),
