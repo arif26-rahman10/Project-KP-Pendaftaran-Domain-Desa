@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
+import '../../main.dart';
 import 'detail_notifikasi_page.dart';
 
 class NotifikasiPage extends StatelessWidget {

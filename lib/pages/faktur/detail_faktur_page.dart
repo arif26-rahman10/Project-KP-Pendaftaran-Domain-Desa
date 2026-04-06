@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-import '../main.dart';
-import '../services/local_auth_service.dart';
-import 'domain_page.dart';
+import '../../main.dart';
+import '../../services/local_auth_service.dart';
+import '../domain/domain_page.dart';
 import 'faktur_page.dart';
-import 'home_page.dart';
-import 'profile_page.dart';
+import '../home_page.dart';
+import '../users/profile_page.dart';
 
 class DetailFakturPage extends StatefulWidget {
   final String fullName;
@@ -93,9 +93,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Bukti pembayaran "$namaFile" berhasil dikirim'),
-      ),
+      SnackBar(content: Text('Bukti pembayaran "$namaFile" berhasil dikirim')),
     );
   }
 
@@ -106,40 +104,32 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => HomePage(
-            fullName: widget.fullName,
-            username: widget.username,
-          ),
+          builder: (_) =>
+              HomePage(fullName: widget.fullName, username: widget.username),
         ),
       );
     } else if (index == 1) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => DomainPage(
-            fullName: widget.fullName,
-            username: widget.username,
-          ),
+          builder: (_) =>
+              DomainPage(fullName: widget.fullName, username: widget.username),
         ),
       );
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => FakturPage(
-            fullName: widget.fullName,
-            username: widget.username,
-          ),
+          builder: (_) =>
+              FakturPage(fullName: widget.fullName, username: widget.username),
         ),
       );
     } else if (index == 3) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => ProfilePage(
-            fullName: widget.fullName,
-            username: widget.username,
-          ),
+          builder: (_) =>
+              ProfilePage(fullName: widget.fullName, username: widget.username),
         ),
       );
     }
@@ -153,11 +143,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: isActive ? kPrimary : Colors.grey,
-            size: 22,
-          ),
+          Icon(icon, color: isActive ? kPrimary : Colors.grey, size: 22),
           const SizedBox(height: 4),
           Text(
             label,
@@ -174,9 +160,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
   Widget _buildInfoRow(String title, String value) {
     return Container(
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade300),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
       ),
       child: Row(
         children: [
@@ -186,10 +170,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Text(
                 title,
-                style: const TextStyle(
-                  color: Color(0xFF3F51B5),
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Color(0xFF3F51B5), fontSize: 14),
               ),
             ),
           ),
@@ -201,10 +182,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
               child: Text(
                 value,
                 textAlign: TextAlign.right,
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Colors.black87, fontSize: 14),
               ),
             ),
           ),
@@ -271,26 +249,17 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                   const SizedBox(height: 8),
                   Text(
                     widget.invoiceNumber,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                    ),
+                    style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     'Tanggal Terbit : ${widget.tanggalTerbit}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     'Tanggal Kadaluarsa : ${widget.tanggalKadaluarsa}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 18),
                   const Text(
@@ -313,26 +282,19 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                   const SizedBox(height: 3),
                   Text(
                     emailUser.isEmpty ? 'user@gmail.com' : emailUser,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade700,
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    alamatKantor.isEmpty ? 'Jl. Kelapapati Tengah' : alamatKantor,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
+                    alamatKantor.isEmpty
+                        ? 'Jl. Kelapapati Tengah'
+                        : alamatKantor,
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     'Kelapapati, Bengkalis, Bengkalis, Riau',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 18),
                   Container(
@@ -379,35 +341,23 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                   const SizedBox(height: 3),
                   Text(
                     'Nama BRI',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade800,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade800),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     'Jalan XXXXX',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     'Account Number xxxxxxxxxxx',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 18),
                   RichText(
                     text: const TextSpan(
                       text: 'Bukti Pembayaran ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
                       children: [
                         TextSpan(
                           text: '*',
@@ -502,9 +452,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
         ),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey.shade200),
-          ),
+          border: Border(top: BorderSide(color: Colors.grey.shade200)),
           boxShadow: const [
             BoxShadow(
               color: Colors.black12,

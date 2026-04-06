@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
-import '../services/local_auth_service.dart';
-import 'domain_page.dart';
-import 'home_page.dart';
+import '../../main.dart';
+import '../../services/local_auth_service.dart';
+import '../domain/domain_page.dart';
+import '../home_page.dart';
 import 'informasi_instansi_page.dart';
 import 'login_page.dart';
-import 'faktur_page.dart';
-import 'notifikasi_page.dart';
-import '../widgets/app_bottom_nav.dart';
+import '../faktur/faktur_page.dart';
+import '../notifikasi/notifikasi_page.dart';
+import '../../widgets/app_bottom_nav.dart';
 
 class ProfilePage extends StatefulWidget {
   final String fullName;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
-import '../services/local_auth_service.dart';
+import '../../main.dart';
+import '../../services/local_auth_service.dart';
 
 class InformasiInstansiPage extends StatefulWidget {
   const InformasiInstansiPage({super.key});

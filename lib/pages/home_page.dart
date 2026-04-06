@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
-import 'domain_page.dart';
-import 'faktur_page.dart';
-import 'profile_page.dart';
-import 'pendaftaran_domain_page.dart';
-import 'notifikasi_page.dart';
+import 'domain/domain_page.dart';
+import 'faktur/faktur_page.dart';
+import 'users/profile_page.dart';
+import 'domain/pendaftaran_domain_page.dart';
+import 'notifikasi/notifikasi_page.dart';
 
 class HomePage extends StatefulWidget {
   final String fullName;

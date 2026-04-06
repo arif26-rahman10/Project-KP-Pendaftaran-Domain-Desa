@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
-import 'home_page.dart';
-import 'profile_page.dart';
-import 'faktur_page.dart';
-import 'notifikasi_page.dart';
+import '../../main.dart';
+import '../home_page.dart';
+import '../users/profile_page.dart';
+import '../faktur/faktur_page.dart';
+import '../notifikasi/notifikasi_page.dart';
 import 'daftar_domain_page.dart';
 import 'pendaftaran_domain_page.dart';
-import 'verifikasi_dokumen_page.dart';
+import '../verif_dok/verifikasi_dokumen_page.dart';
 
 class DomainPage extends StatefulWidget {
   final String fullName;

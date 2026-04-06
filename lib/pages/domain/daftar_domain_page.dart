@@ -1,31 +1,70 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
-import '../data/verifikasi_dokumen_data.dart';
-import 'detail_verifikasi_dokumen_page.dart';
+import '../../main.dart';
+import 'detail_domain_page.dart';
 
-class VerifikasiDokumenPage extends StatefulWidget {
-  const VerifikasiDokumenPage({super.key});
+class DaftarDomainPage extends StatefulWidget {
+  const DaftarDomainPage({super.key});
 
   @override
-  State<VerifikasiDokumenPage> createState() => _VerifikasiDokumenPageState();
+  State<DaftarDomainPage> createState() => _DaftarDomainPageState();
 }
 
-class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
+class _DaftarDomainPageState extends State<DaftarDomainPage> {
   String selectedType = 'Type';
 
-  List<Map<String, dynamic>> get dokumenList =>
-      VerifikasiDokumenData.dokumenList;
+  final List<Map<String, String>> domainList = [
+    {
+      'namaDomain': 'xxx.desa.id',
+      'status': 'Aktif',
+      'tipeAplikasi': 'Registrasi',
+      'masaAktif': '1 Tahun',
+      'tanggalKadaluarsa': '2/11/2019',
+      'harga': 'Rp.50.000',
+      'detailDomain': '-',
+      'buktiPembayaran': 'BuktiPembayaran.pdf',
+    },
+    {
+      'namaDomain': 'xxx.desa.id',
+      'status': 'Menunggu Pembayaran',
+      'tipeAplikasi': 'Registrasi',
+      'masaAktif': '1 Tahun',
+      'tanggalKadaluarsa': '2/11/2019',
+      'harga': 'Rp.50.000',
+      'detailDomain': '-',
+      'buktiPembayaran': '-',
+    },
+    {
+      'namaDomain': 'xxx.desa.id',
+      'status': 'Nonaktif',
+      'tipeAplikasi': 'Registrasi',
+      'masaAktif': '1 Tahun',
+      'tanggalKadaluarsa': '2/11/2019',
+      'harga': 'Rp.50.000',
+      'detailDomain': '-',
+      'buktiPembayaran': 'BuktiPembayaran.pdf',
+    },
+    {
+      'namaDomain': 'xxx.desa.id',
+      'status': 'Kadaluarsa',
+      'tipeAplikasi': 'Registrasi',
+      'masaAktif': '1 Tahun',
+      'tanggalKadaluarsa': '2/11/2019',
+      'harga': 'Rp.50.000',
+      'detailDomain': '-',
+      'buktiPembayaran': '-',
+    },
+  ];
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'Disetujui':
+      case 'Aktif':
         return const Color(0xFF69C17A);
-      case 'Ditinjau':
-        return const Color(0xFFF59B23);
-      case 'Perlu Perbaikan':
-        return const Color(0xFFE8262A);
-      case 'Draft':
-        return const Color(0xFF5D6B7B);
+      case 'Menunggu Pembayaran':
+        return const Color(0xFFE6671E);
+      case 'Nonaktif':
+        return const Color(0xFF9E9E9E);
+      case 'Kadaluarsa':
+        return const Color(0xFF6F7387);
       default:
         return Colors.grey;
     }
@@ -33,152 +72,114 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
 
   double _statusWidth(String status) {
     switch (status) {
-      case 'Disetujui':
-        return 92;
-      case 'Ditinjau':
-        return 92;
-      case 'Perlu Perbaikan':
-        return 116;
-      case 'Draft':
+      case 'Aktif':
+        return 70;
+      case 'Menunggu Pembayaran':
+        return 94;
+      case 'Nonaktif':
         return 74;
+      case 'Kadaluarsa':
+        return 95;
       default:
         return 80;
     }
   }
 
-  Widget _statusBadge(String status) {
-    if (status == 'Disetujui') {
-      return Container(
-        width: _statusWidth(status),
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          color: _statusColor(status),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(
-              Icons.check_circle_outline,
-              color: Colors.white,
-              size: 13,
-            ),
-            SizedBox(width: 4),
-            Text(
-              'Disetujui',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      );
+  double _statusFontSize(String status) {
+    if (status == 'Menunggu Pembayaran') {
+      return 10;
     }
+    return 12;
+  }
 
+  void _goToDetail(Map<String, String> item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DetailDomainPage(
+          namaDomain: item['namaDomain'] ?? '-',
+          tipeAplikasi: item['tipeAplikasi'] ?? '-',
+          status: item['status'] ?? '-',
+          masaAktif: item['masaAktif'] ?? '-',
+          tanggalKadaluarsa: item['tanggalKadaluarsa'] ?? '-',
+          harga: item['harga'] ?? '-',
+          detailDomain: item['detailDomain'] ?? '-',
+          buktiPembayaran: item['buktiPembayaran'] ?? '-',
+        ),
+      ),
+    );
+  }
+
+  Widget _statusBadge(String status) {
     return Container(
       width: _statusWidth(status),
       padding: const EdgeInsets.symmetric(vertical: 6),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: _statusColor(status),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(
-        status,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  Widget _aksiButtonBlue(Map<String, dynamic> item) {
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: const Color(0xFF29A8F2),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: IconButton(
-        padding: EdgeInsets.zero,
-        onPressed: () async {
-          final result = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(
-              builder: (_) => DetailVerifikasiDokumenPage(
-                id: item['id'],
-                status: item['status'],
-              ),
-            ),
-          );
-
-          if (result == true && mounted) {
-            setState(() {});
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Dokumen berhasil dikirim'),
-              ),
-            );
-          } else {
-            setState(() {});
-          }
-        },
-        icon: const Icon(
-          Icons.description_outlined,
-          color: Colors.white,
-          size: 16,
-        ),
-      ),
-    );
-  }
-
-  Widget _aksiButtonRed(int id) {
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF32626),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: IconButton(
-        padding: EdgeInsets.zero,
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('Hapus Draft'),
-              content: const Text('Yakin ingin menghapus draft ini?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
+      child: status == 'Aktif'
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(
+                  Icons.check_circle_outline,
+                  color: Colors.white,
+                  size: 13,
                 ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      VerifikasiDokumenData.deleteItem(id);
-                    });
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Draft dihapus'),
-                      ),
-                    );
-                  },
-                  child: const Text('Hapus'),
+                SizedBox(width: 4),
+                Text(
+                  'Aktif',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
                 ),
               ],
+            )
+          : Text(
+              status,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: _statusFontSize(status),
+              ),
             ),
-          );
-        },
-        icon: const Icon(
-          Icons.delete_outline,
-          color: Colors.white,
-          size: 16,
+    );
+  }
+
+  Widget _detailButton(VoidCallback onTap) {
+    return SizedBox(
+      width: 63,
+      height: 32,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kPrimary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+        onPressed: onTap,
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Detail',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(width: 2),
+            Icon(
+              Icons.arrow_forward,
+              size: 13,
+            ),
+          ],
         ),
       ),
     );
@@ -215,7 +216,7 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  'Verifikasi Dokumen',
+                  'Daftar Domain',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -227,7 +228,7 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(0, 22, 0, 20),
+              padding: const EdgeInsets.fromLTRB(0, 18, 0, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -242,7 +243,8 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Row(
@@ -297,20 +299,20 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                                   child: Text('Type'),
                                 ),
                                 DropdownMenuItem(
-                                  value: 'Disetujui',
-                                  child: Text('Disetujui'),
+                                  value: 'Aktif',
+                                  child: Text('Aktif'),
                                 ),
                                 DropdownMenuItem(
-                                  value: 'Ditinjau',
-                                  child: Text('Ditinjau'),
+                                  value: 'Menunggu Pembayaran',
+                                  child: Text('Menunggu Pembayaran'),
                                 ),
                                 DropdownMenuItem(
-                                  value: 'Perlu Perbaikan',
-                                  child: Text('Perlu Perbaikan'),
+                                  value: 'Nonaktif',
+                                  child: Text('Nonaktif'),
                                 ),
                                 DropdownMenuItem(
-                                  value: 'Draft',
-                                  child: Text('Draft'),
+                                  value: 'Kadaluarsa',
+                                  child: Text('Kadaluarsa'),
                                 ),
                               ],
                               onChanged: (value) {
@@ -324,8 +326,11 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 10),
+
                   Container(
+                    margin: const EdgeInsets.only(top: 0),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF3F3F3),
                       borderRadius: BorderRadius.circular(12),
@@ -354,9 +359,9 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                                 ),
                               ),
                               Expanded(
-                                flex: 5,
+                                flex: 4,
                                 child: Text(
-                                  'Status Dokumen',
+                                  'Status',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,
@@ -378,8 +383,8 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                             ],
                           ),
                         ),
-                        ...dokumenList.map((item) {
-                          return Container(
+                        ...domainList.map(
+                          (item) => Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
                               vertical: 10,
@@ -404,7 +409,7 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 5,
+                                  flex: 4,
                                   child: Center(
                                     child: _statusBadge(item['status'] ?? '-'),
                                   ),
@@ -412,27 +417,21 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                                 Expanded(
                                   flex: 3,
                                   child: Center(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        _aksiButtonBlue(item),
-                                        if (item['showDelete'] == true) ...[
-                                          const SizedBox(width: 6),
-                                          _aksiButtonRed(item['id']),
-                                        ],
-                                      ],
+                                    child: _detailButton(
+                                      () => _goToDetail(item),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                          );
-                        }),
+                          ),
+                        ),
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 14),
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Row(

@@ -1,14 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import '../main.dart';
-import '../services/local_auth_service.dart';
-import '../services/api_service.dart';
-import '../widgets/custom_field.dart';
-import '../widgets/support_logo.dart';
-import '../widgets/top_pattern.dart';
-import 'home_page.dart';
+import '../../main.dart';
+import '../../services/api_service.dart';
+import '../../widgets/custom_field.dart';
+import '../../widgets/support_logo.dart';
+import '../../widgets/top_pattern.dart';
+import '../home_page.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -25,41 +22,6 @@ class _LoginPageState extends State<LoginPage> {
   bool rememberMe = false;
   bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadRememberMe();
-    _checkLoginStatus();
-  }
-
-  Future<void> _loadRememberMe() async {
-    final savedRememberMe = await LocalAuthService.getRememberMe();
-    if (!mounted) return;
-    setState(() {
-      rememberMe = savedRememberMe;
-    });
-  }
-
-  Future<void> _checkLoginStatus() async {
-    final isLoggedIn = await LocalAuthService.isLoggedIn();
-    if (!mounted) return;
-
-    if (isLoggedIn) {
-      final user = await LocalAuthService.getRegisteredUser();
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => HomePage(
-            fullName: user['name'] ?? user['name'] ?? 'Pengguna',
-            username: user['username'] ?? '-',
-          ),
-        ),
-      );
-    }
-  }
-
   Future<void> _login() async {
     final username = usernameController.text.trim();
     final password = passwordController.text.trim();
@@ -71,21 +33,21 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      // Memanggil ApiService
       final result = await ApiService.login(
         username: username,
         password: password,
       );
 
-      if (result['success'] == true) {
-        final user = result['user'];
+      print("RESPONSE: $result");
 
-        if (!mounted) return;
+      if (!mounted) return;
+
+      final user = result['user']; // 🔥 FIX DI SINI
+
+      if (result['success'] == true && user != null) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Login berhasil')));
@@ -99,16 +61,24 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         );
+      } else {
+        final message = result['message'] ?? 'Login gagal';
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (e) {
       if (!mounted) return;
+
+      print("ERROR: $e");
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -148,17 +118,23 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(color: kPrimary, fontSize: 14),
                 ),
                 const SizedBox(height: 28),
+
+                // Username
                 CustomField(
                   icon: Icons.person_outline,
                   hint: 'Masukkan Username',
                   controller: usernameController,
                 ),
+
+                // Password
                 CustomField(
                   icon: Icons.lock_outline,
                   hint: 'Password',
                   obscure: true,
                   controller: passwordController,
                 ),
+
+                // Remember me (UI only)
                 Row(
                   children: [
                     SizedBox(
@@ -166,12 +142,10 @@ class _LoginPageState extends State<LoginPage> {
                       height: 24,
                       child: Checkbox(
                         value: rememberMe,
-                        onChanged: (value) async {
-                          final newValue = value ?? false;
+                        onChanged: (value) {
                           setState(() {
-                            rememberMe = newValue;
+                            rememberMe = value ?? false;
                           });
-                          await LocalAuthService.setRememberMe(newValue);
                         },
                         activeColor: kPrimary,
                         side: BorderSide(color: Colors.grey.shade500),
@@ -187,7 +161,10 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 18),
+
+                // Button Login
                 SizedBox(
                   width: double.infinity,
                   height: 58,
@@ -220,7 +197,10 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                   ),
                 ),
+
                 const SizedBox(height: 18),
+
+                // Register
                 Center(
                   child: InkWell(
                     onTap: () {
@@ -250,7 +230,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 34),
+
                 const Center(child: SupportLogo()),
               ],
             ),

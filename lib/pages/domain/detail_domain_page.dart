@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
-import 'detail_faktur_page.dart';
+import '../../main.dart';
+import '../faktur/detail_faktur_page.dart';
 
 class DetailDomainPage extends StatelessWidget {
   final String namaDomain;
@@ -73,19 +73,9 @@ class DetailDomainPage extends StatelessWidget {
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.check_circle_outline,
-              color: Colors.white,
-              size: 12,
-            ),
+            Icon(Icons.check_circle_outline, color: Colors.white, size: 12),
             SizedBox(width: 3),
-            Text(
-              'Aktif',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-              ),
-            ),
+            Text('Aktif', style: TextStyle(color: Colors.white, fontSize: 11)),
           ],
         ),
       );
@@ -102,49 +92,32 @@ class DetailDomainPage extends StatelessWidget {
       child: Text(
         status,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: _statusFontSize(),
-        ),
+        style: TextStyle(color: Colors.white, fontSize: _statusFontSize()),
       ),
     );
   }
 
-  Widget _tableRow({
-    required String title,
-    required Widget valueWidget,
-  }) {
+  Widget _tableRow({required String title, required Widget valueWidget}) {
     return Container(
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade300),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
       ),
       child: Row(
         children: [
           Expanded(
             flex: 5,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 11,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
               child: Text(
                 title,
-                style: const TextStyle(
-                  color: Color(0xFF4B5BD7),
-                  fontSize: 13,
-                ),
+                style: const TextStyle(color: Color(0xFF4B5BD7), fontSize: 13),
               ),
             ),
           ),
           Expanded(
             flex: 5,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 11,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: valueWidget,
@@ -160,10 +133,7 @@ class DetailDomainPage extends StatelessWidget {
     return Text(
       value,
       textAlign: TextAlign.right,
-      style: const TextStyle(
-        fontSize: 14,
-        color: Colors.black87,
-      ),
+      style: const TextStyle(fontSize: 14, color: Colors.black87),
     );
   }
 
@@ -230,10 +200,7 @@ class DetailDomainPage extends StatelessWidget {
         onPressed: onPressed,
         child: Text(
           text,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
         ),
       ),
     );

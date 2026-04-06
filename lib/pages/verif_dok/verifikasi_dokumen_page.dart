@@ -1,70 +1,31 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
-import 'detail_domain_page.dart';
+import '../../main.dart';
+import '../../data/verifikasi_dokumen_data.dart';
+import 'detail_verifikasi_dokumen_page.dart';
 
-class DaftarDomainPage extends StatefulWidget {
-  const DaftarDomainPage({super.key});
+class VerifikasiDokumenPage extends StatefulWidget {
+  const VerifikasiDokumenPage({super.key});
 
   @override
-  State<DaftarDomainPage> createState() => _DaftarDomainPageState();
+  State<VerifikasiDokumenPage> createState() => _VerifikasiDokumenPageState();
 }
 
-class _DaftarDomainPageState extends State<DaftarDomainPage> {
+class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
   String selectedType = 'Type';
 
-  final List<Map<String, String>> domainList = [
-    {
-      'namaDomain': 'xxx.desa.id',
-      'status': 'Aktif',
-      'tipeAplikasi': 'Registrasi',
-      'masaAktif': '1 Tahun',
-      'tanggalKadaluarsa': '2/11/2019',
-      'harga': 'Rp.50.000',
-      'detailDomain': '-',
-      'buktiPembayaran': 'BuktiPembayaran.pdf',
-    },
-    {
-      'namaDomain': 'xxx.desa.id',
-      'status': 'Menunggu Pembayaran',
-      'tipeAplikasi': 'Registrasi',
-      'masaAktif': '1 Tahun',
-      'tanggalKadaluarsa': '2/11/2019',
-      'harga': 'Rp.50.000',
-      'detailDomain': '-',
-      'buktiPembayaran': '-',
-    },
-    {
-      'namaDomain': 'xxx.desa.id',
-      'status': 'Nonaktif',
-      'tipeAplikasi': 'Registrasi',
-      'masaAktif': '1 Tahun',
-      'tanggalKadaluarsa': '2/11/2019',
-      'harga': 'Rp.50.000',
-      'detailDomain': '-',
-      'buktiPembayaran': 'BuktiPembayaran.pdf',
-    },
-    {
-      'namaDomain': 'xxx.desa.id',
-      'status': 'Kadaluarsa',
-      'tipeAplikasi': 'Registrasi',
-      'masaAktif': '1 Tahun',
-      'tanggalKadaluarsa': '2/11/2019',
-      'harga': 'Rp.50.000',
-      'detailDomain': '-',
-      'buktiPembayaran': '-',
-    },
-  ];
+  List<Map<String, dynamic>> get dokumenList =>
+      VerifikasiDokumenData.dokumenList;
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'Aktif':
+      case 'Disetujui':
         return const Color(0xFF69C17A);
-      case 'Menunggu Pembayaran':
-        return const Color(0xFFE6671E);
-      case 'Nonaktif':
-        return const Color(0xFF9E9E9E);
-      case 'Kadaluarsa':
-        return const Color(0xFF6F7387);
+      case 'Ditinjau':
+        return const Color(0xFFF59B23);
+      case 'Perlu Perbaikan':
+        return const Color(0xFFE8262A);
+      case 'Draft':
+        return const Color(0xFF5D6B7B);
       default:
         return Colors.grey;
     }
@@ -72,115 +33,135 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
 
   double _statusWidth(String status) {
     switch (status) {
-      case 'Aktif':
-        return 70;
-      case 'Menunggu Pembayaran':
-        return 94;
-      case 'Nonaktif':
+      case 'Disetujui':
+        return 92;
+      case 'Ditinjau':
+        return 92;
+      case 'Perlu Perbaikan':
+        return 116;
+      case 'Draft':
         return 74;
-      case 'Kadaluarsa':
-        return 95;
       default:
         return 80;
     }
   }
 
-  double _statusFontSize(String status) {
-    if (status == 'Menunggu Pembayaran') {
-      return 10;
-    }
-    return 12;
-  }
-
-  void _goToDetail(Map<String, String> item) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => DetailDomainPage(
-          namaDomain: item['namaDomain'] ?? '-',
-          tipeAplikasi: item['tipeAplikasi'] ?? '-',
-          status: item['status'] ?? '-',
-          masaAktif: item['masaAktif'] ?? '-',
-          tanggalKadaluarsa: item['tanggalKadaluarsa'] ?? '-',
-          harga: item['harga'] ?? '-',
-          detailDomain: item['detailDomain'] ?? '-',
-          buktiPembayaran: item['buktiPembayaran'] ?? '-',
-        ),
-      ),
-    );
-  }
-
   Widget _statusBadge(String status) {
+    if (status == 'Disetujui') {
+      return Container(
+        width: _statusWidth(status),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: _statusColor(status),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.check_circle_outline, color: Colors.white, size: 13),
+            SizedBox(width: 4),
+            Text(
+              'Disetujui',
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       width: _statusWidth(status),
       padding: const EdgeInsets.symmetric(vertical: 6),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: _statusColor(status),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
       ),
-      child: status == 'Aktif'
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(
-                  Icons.check_circle_outline,
-                  color: Colors.white,
-                  size: 13,
-                ),
-                SizedBox(width: 4),
-                Text(
-                  'Aktif',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            )
-          : Text(
-              status,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: _statusFontSize(status),
-              ),
-            ),
+      child: Text(
+        status,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white, fontSize: 12),
+      ),
     );
   }
 
-  Widget _detailButton(VoidCallback onTap) {
-    return SizedBox(
-      width: 63,
-      height: 32,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: kPrimary,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-        ),
-        onPressed: onTap,
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Detail',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+  Widget _aksiButtonBlue(Map<String, dynamic> item) {
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: const Color(0xFF29A8F2),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        onPressed: () async {
+          final result = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DetailVerifikasiDokumenPage(
+                id: item['id'],
+                status: item['status'],
               ),
             ),
-            SizedBox(width: 2),
-            Icon(
-              Icons.arrow_forward,
-              size: 13,
-            ),
-          ],
+          );
+
+          if (result == true && mounted) {
+            setState(() {});
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Dokumen berhasil dikirim')),
+            );
+          } else {
+            setState(() {});
+          }
+        },
+        icon: const Icon(
+          Icons.description_outlined,
+          color: Colors.white,
+          size: 16,
         ),
+      ),
+    );
+  }
+
+  Widget _aksiButtonRed(int id) {
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF32626),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('Hapus Draft'),
+              content: const Text('Yakin ingin menghapus draft ini?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      VerifikasiDokumenData.deleteItem(id);
+                    });
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Draft dihapus')),
+                    );
+                  },
+                  child: const Text('Hapus'),
+                ),
+              ],
+            ),
+          );
+        },
+        icon: const Icon(Icons.delete_outline, color: Colors.white, size: 16),
       ),
     );
   }
@@ -216,7 +197,7 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  'Daftar Domain',
+                  'Verifikasi Dokumen',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -228,7 +209,7 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(0, 18, 0, 20),
+              padding: const EdgeInsets.fromLTRB(0, 22, 0, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -243,8 +224,7 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-
+                  const SizedBox(height: 14),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Row(
@@ -299,20 +279,20 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
                                   child: Text('Type'),
                                 ),
                                 DropdownMenuItem(
-                                  value: 'Aktif',
-                                  child: Text('Aktif'),
+                                  value: 'Disetujui',
+                                  child: Text('Disetujui'),
                                 ),
                                 DropdownMenuItem(
-                                  value: 'Menunggu Pembayaran',
-                                  child: Text('Menunggu Pembayaran'),
+                                  value: 'Ditinjau',
+                                  child: Text('Ditinjau'),
                                 ),
                                 DropdownMenuItem(
-                                  value: 'Nonaktif',
-                                  child: Text('Nonaktif'),
+                                  value: 'Perlu Perbaikan',
+                                  child: Text('Perlu Perbaikan'),
                                 ),
                                 DropdownMenuItem(
-                                  value: 'Kadaluarsa',
-                                  child: Text('Kadaluarsa'),
+                                  value: 'Draft',
+                                  child: Text('Draft'),
                                 ),
                               ],
                               onChanged: (value) {
@@ -326,11 +306,8 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
                   Container(
-                    margin: const EdgeInsets.only(top: 0),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF3F3F3),
                       borderRadius: BorderRadius.circular(12),
@@ -359,9 +336,9 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
                                 ),
                               ),
                               Expanded(
-                                flex: 4,
+                                flex: 5,
                                 child: Text(
-                                  'Status',
+                                  'Status Dokumen',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,
@@ -383,17 +360,15 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
                             ],
                           ),
                         ),
-                        ...domainList.map(
-                          (item) => Container(
+                        ...dokumenList.map((item) {
+                          return Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
                               vertical: 10,
                             ),
                             decoration: BoxDecoration(
                               border: Border(
-                                bottom: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
+                                bottom: BorderSide(color: Colors.grey.shade300),
                               ),
                             ),
                             child: Row(
@@ -409,7 +384,7 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 4,
+                                  flex: 5,
                                   child: Center(
                                     child: _statusBadge(item['status'] ?? '-'),
                                   ),
@@ -417,21 +392,27 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
                                 Expanded(
                                   flex: 3,
                                   child: Center(
-                                    child: _detailButton(
-                                      () => _goToDetail(item),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        _aksiButtonBlue(item),
+                                        if (item['showDelete'] == true) ...[
+                                          const SizedBox(width: 6),
+                                          _aksiButtonRed(item['id']),
+                                        ],
+                                      ],
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        ),
+                          );
+                        }),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 14),
-
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Row(
@@ -447,10 +428,7 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
                         ),
                         const Text(
                           '1',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
-                          ),
+                          style: TextStyle(fontSize: 14, color: Colors.black87),
                         ),
                         const SizedBox(width: 16),
                         Container(

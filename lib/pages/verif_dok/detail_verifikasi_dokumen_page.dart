@@ -1,7 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import '../main.dart';
-import '../data/verifikasi_dokumen_data.dart';
+import '../../main.dart';
+import '../../data/verifikasi_dokumen_data.dart';
 
 class DetailVerifikasiDokumenPage extends StatefulWidget {
   final int id;

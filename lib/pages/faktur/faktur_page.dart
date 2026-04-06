@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
+import '../../main.dart';
 import 'detail_faktur_page.dart';
-import 'home_page.dart';
-import 'domain_page.dart';
-import 'profile_page.dart';
-import 'notifikasi_page.dart';
+import '../home_page.dart';
+import '../domain/domain_page.dart';
+import '../users/profile_page.dart';
+import '../notifikasi/notifikasi_page.dart';
 
 class FakturPage extends StatefulWidget {
   final String fullName;

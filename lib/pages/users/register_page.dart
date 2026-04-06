@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
-import '../widgets/custom_field.dart';
-import '../widgets/support_logo.dart';
-import '../widgets/top_pattern.dart';
-import '../controllers/register_controller.dart';
+import '../../main.dart';
+import '../../widgets/custom_field.dart';
+import '../../widgets/support_logo.dart';
+import '../../widgets/top_pattern.dart';
+import '../../controllers/register_controller.dart';
 import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {

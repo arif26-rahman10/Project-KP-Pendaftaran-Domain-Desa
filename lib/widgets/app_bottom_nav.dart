@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../pages/home_page.dart';
-import '../pages/domain_page.dart';
-import '../pages/faktur_page.dart';
-import '../pages/profile_page.dart';
+import '../pages/domain/domain_page.dart';
+import '../pages/faktur/faktur_page.dart';
+import '../pages/users/profile_page.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
