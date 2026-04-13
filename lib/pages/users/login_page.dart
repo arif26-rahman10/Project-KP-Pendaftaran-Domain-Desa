@@ -45,9 +45,13 @@ class _LoginPageState extends State<LoginPage> {
 
       if (!mounted) return;
 
-      final user = result['user']; // 🔥 FIX DI SINI
+      // 🔥 AMANIN DATA
+      final user = result['user'];
 
-      if (result['success'] == true && user != null) {
+      if (result['success'] == true && user != null && user is Map) {
+        final name = user['name']?.toString() ?? 'Pengguna';
+        final uname = user['username']?.toString() ?? '-';
+
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Login berhasil')));
@@ -55,10 +59,7 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => HomePage(
-              fullName: user['name'] ?? 'Pengguna',
-              username: user['username'] ?? '-',
-            ),
+            builder: (_) => HomePage(fullName: name, username: uname),
           ),
         );
       } else {
@@ -70,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       if (!mounted) return;
 
-      print("ERROR: $e");
+      print("ERROR LOGIN: $e");
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
@@ -199,40 +200,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
 
                 const SizedBox(height: 18),
-
-                // Register
-                Center(
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const RegisterPage()),
-                      );
-                    },
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'Belum punya akun? ',
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 14,
-                        ),
-                        children: const [
-                          TextSpan(
-                            text: 'Daftar',
-                            style: TextStyle(
-                              color: Colors.orange,
-                              fontWeight: FontWeight.w600,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
                 const SizedBox(height: 34),
-
                 const Center(child: SupportLogo()),
               ],
             ),

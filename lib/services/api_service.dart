@@ -7,24 +7,40 @@ class ApiService {
     return {"Accept": "application/json", "Content-Type": "application/json"};
   }
 
-  // ================= LOGIN =================
   static Future<Map<String, dynamic>> login({
     required String username,
     required String password,
   }) async {
-    final response = await http.post(
-      Uri.parse("${ApiConfig.baseUrl}${ApiConfig.login}"),
-      headers: _headers(),
-      body: jsonEncode({"username": username, "password": password}),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiConfig.baseUrl}${ApiConfig.login}"),
+        headers: _headers(),
+        body: jsonEncode({"username": username, "password": password}),
+      );
 
-    final data = jsonDecode(response.body);
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
 
-    if (response.statusCode != 200) {
-      throw Exception(data['message'] ?? 'Login gagal');
+      if (response.body.isEmpty) {
+        throw Exception("Response kosong dari server");
+      }
+
+      if (response.statusCode != 200) {
+        throw Exception(
+          "Server error (${response.statusCode}): ${response.body}",
+        );
+      }
+
+      try {
+        final data = jsonDecode(response.body);
+        return data;
+      } catch (e) {
+        throw Exception("Format response bukan JSON: ${response.body}");
+      }
+    } catch (e) {
+      print("LOGIN ERROR: $e");
+      rethrow;
     }
-
-    return data;
   }
 
   // ================= REGISTER =================
@@ -47,6 +63,13 @@ class ApiService {
         "confirmPassword": password,
       }),
     );
+
+    print("REGISTER STATUS: ${response.statusCode}");
+    print("REGISTER BODY: ${response.body}");
+
+    if (response.body.isEmpty) {
+      throw Exception("Response kosong");
+    }
 
     final data = jsonDecode(response.body);
 

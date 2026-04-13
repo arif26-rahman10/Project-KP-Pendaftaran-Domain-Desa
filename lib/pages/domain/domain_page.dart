@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../main.dart';
-import '../home_page.dart';
-import '../users/profile_page.dart';
-import '../faktur/faktur_page.dart';
+import '../../widgets/app_bottom_nav.dart';
 import '../notifikasi/notifikasi_page.dart';
 import 'daftar_domain_page.dart';
-import 'pendaftaran_domain_page.dart';
-import '../verif_dok/verifikasi_dokumen_page.dart';
+import '../pendaftaran/step1_check_domain.dart';
+import '../../services/registration_data.dart';
 
 class DomainPage extends StatefulWidget {
   final String fullName;
@@ -19,42 +17,6 @@ class DomainPage extends StatefulWidget {
 }
 
 class _DomainPageState extends State<DomainPage> {
-  int currentIndex = 1;
-
-  void _onTapNav(int index) {
-    if (index == currentIndex) return;
-
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) =>
-              HomePage(fullName: widget.fullName, username: widget.username),
-        ),
-      );
-    } else if (index == 1) {
-      setState(() {
-        currentIndex = 1;
-      });
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) =>
-              FakturPage(fullName: widget.fullName, username: widget.username),
-        ),
-      );
-    } else if (index == 3) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) =>
-              ProfilePage(fullName: widget.fullName, username: widget.username),
-        ),
-      );
-    }
-  }
-
   Widget _domainCard({
     required IconData icon,
     required String title,
@@ -101,38 +63,17 @@ class _DomainPageState extends State<DomainPage> {
     );
   }
 
-  Widget _navItem(IconData icon, String label, int index) {
-    final isActive = currentIndex == index;
-
-    return InkWell(
-      onTap: () => _onTapNav(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: isActive ? kPrimary : Colors.grey, size: 22),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isActive ? kPrimary : Colors.grey,
-              fontSize: 11,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final topSafe = MediaQuery.of(context).padding.top;
-    final bottomSafe = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: kBg,
       body: Column(
         children: [
           SizedBox(height: topSafe + 12),
+
+          // HEADER
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
             child: Row(
@@ -156,11 +97,7 @@ class _DomainPageState extends State<DomainPage> {
                   ),
                   child: IconButton(
                     padding: EdgeInsets.zero,
-                    icon: const Icon(
-                      Icons.notifications_none,
-                      size: 23,
-                      color: Colors.black87,
-                    ),
+                    icon: const Icon(Icons.notifications_none),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -174,6 +111,8 @@ class _DomainPageState extends State<DomainPage> {
               ],
             ),
           ),
+
+          // CONTENT
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
@@ -182,17 +121,28 @@ class _DomainPageState extends State<DomainPage> {
                 children: [
                   const Text(
                     'Layanan Domain',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
+
                   const SizedBox(height: 30),
 
                   _domainCard(
                     icon: Icons.fact_check_outlined,
-                    title: 'Daftar Domain',
+                    title: 'Pendaftaran Domain',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              Step1CheckDomain(data: RegistrationData()),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 30),
+                  _domainCard(
+                    icon: Icons.fact_check_outlined,
+                    title: 'Perpanjangan Domain',
                     onTap: () {
                       Navigator.push(
                         context,
@@ -205,66 +155,32 @@ class _DomainPageState extends State<DomainPage> {
 
                   const SizedBox(height: 30),
 
-                  _domainCard(
-                    icon: Icons.language,
-                    title: 'Pendaftaran Domain',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const PendaftaranDomainPage(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  _domainCard(
-                    icon: Icons.verified_outlined,
-                    title: 'Verifikasi Dokumen',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const VerifikasiDokumenPage(),
-                        ),
-                      );
-                    },
-                  ),
+                  // 3. MENU VERIFIKASI DOKUMEN
+                  // _domainCard(
+                  //   icon: Icons.verified_outlined,
+                  //   title: 'Verifikasi Dokumen',
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (_) => const VerifikasiDokumenPage(),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
                 ],
               ),
             ),
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(
-          0,
-          12,
-          0,
-          bottomSafe > 0 ? bottomSafe : 12,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Colors.grey.shade200)),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 8,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navItem(Icons.home, 'Beranda', 0),
-            _navItem(Icons.language, 'Domain', 1),
-            _navItem(Icons.receipt_long, 'Faktur', 2),
-            _navItem(Icons.person_outline, 'Profil', 3),
-          ],
-        ),
+
+      // NAVBAR
+      // Index 1 aktif karena ini halaman Domain
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: 1,
+        fullName: widget.fullName,
+        username: widget.username,
       ),
     );
   }
