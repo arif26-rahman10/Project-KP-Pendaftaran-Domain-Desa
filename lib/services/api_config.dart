@@ -1,10 +1,6 @@
 class ApiConfig {
-  static const bool isLocal = true;
-
-  static const String local = "http://localhost:8000/api";
-  static const String production = "https://your-api.com/api";
-
-  static const baseUrl = isLocal ? local : production;
+  static const String baseUrl =
+      "https://015d-103-166-161-146.ngrok-free.app/api";
 
   static const login = "/login";
   static const register = "/register";
