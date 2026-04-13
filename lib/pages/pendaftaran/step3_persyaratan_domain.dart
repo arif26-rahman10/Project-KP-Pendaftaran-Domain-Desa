@@ -53,8 +53,6 @@ class _Step3PersyaratanDomainState extends State<Step3PersyaratanDomain> {
           MaterialPageRoute(builder: (_) => Step4Pratinjau(data: widget.data)),
         );
       },
-
-      // 🔥 ISI HALAMAN
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
