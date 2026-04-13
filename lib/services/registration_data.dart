@@ -1,37 +1,40 @@
 class RegistrationData {
-  String domainName = '';
+  // ================= DOMAIN =================
+  String namaDomain = '';
   bool isDomainAvailable = false;
 
+  // ================= AKUN =================
   String username = '';
   String password = '';
   String name = '';
   String email = '';
   String noHp = '';
-  String role = 'desa'; // Default role
+  String role = 'desa';
 
-  // ================= DATA DESA (Profil Desa) =================
+  // ================= DATA DESA =================
   String namaDesa = '';
   String namaKepalaDesa = '';
   String nipKepalaDesa = '';
-  String klasifikasiInstansi = 'Pemerintah Desa'; // Default value
+  String klasifikasiInstansi = 'Pemerintah Desa';
 
-  // Kontak Desa
+  // ================= KONTAK =================
   String telepon = '';
   String faksimili = '';
   String alamat = '';
   String kodePos = '';
 
-  // Wilayah
+  // ================= WILAYAH =================
   String provinsi = 'Riau';
   String kotaKabupaten = 'Bengkalis';
   String kecamatan = 'Bengkalis';
   String desaKelurahan = 'Kelapapati';
 
-  // Files (Dokumen)
+  // ================= FILE =================
   Map<String, String> filePaths = {};
-  String suratPermohonan = 'Upload Dokumen.pdf';
-  String suratKuasa = 'Upload Dokumen.pdf';
-  String suratPenunjukan = 'Upload Dokumen.pdf';
-  String kartuPegawai = 'Upload Dokumen.pdf';
-  String dasarHukum = 'Upload Dokumen.pdf';
+
+  String suratPermohonan = '';
+  String suratKuasa = '';
+  String suratPenunjukan = '';
+  String kartuPegawai = '';
+  String dasarHukum = '';
 }
