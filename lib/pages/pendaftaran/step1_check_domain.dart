@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../main.dart';
 import '../../widgets/step_form_layout.dart';
 import 'step2_informasi_instansi.dart';
 import '../../services/registration_data.dart';
 
-class Step1CheckDomain extends StatelessWidget {
+class Step1CheckDomain extends StatefulWidget {
   final RegistrationData data;
   const Step1CheckDomain({super.key, required this.data});
+
+  @override
+  State<Step1CheckDomain> createState() => _Step1CheckDomainState();
+}
+
+class _Step1CheckDomainState extends State<Step1CheckDomain> {
+  final TextEditingController domainController = TextEditingController();
 
   Future<void> _openDomain() async {
     final Uri url = Uri.parse('https://domain.go.id/');
@@ -17,13 +23,32 @@ class Step1CheckDomain extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // kalau sebelumnya sudah diisi, tampilkan lagi
+    domainController.text = widget.data.namaDomain ?? '';
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StepFormLayout(
       activeStep: 0,
       onNext: () {
+        if (domainController.text.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Nama domain wajib diisi')),
+          );
+          return;
+        }
+
+        // simpan ke data
+        widget.data.namaDomain = domainController.text;
+
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => Step2InformasiInstansi(data: data)),
+          MaterialPageRoute(
+            builder: (_) => Step2InformasiInstansi(data: widget.data),
+          ),
         );
       },
       content: Column(
@@ -35,9 +60,10 @@ class Step1CheckDomain extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           const Text(
-            "Lakukan pengecekan ketersediaan nama domain sebelum mengajukan",
+            "Lakukan pengecekan di website lalu isi domain yang ingin diajukan",
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
+
           const SizedBox(height: 20),
 
           SizedBox(
@@ -48,7 +74,30 @@ class Step1CheckDomain extends StatelessWidget {
                 backgroundColor: Colors.red,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: const Text("Cek Sekarang"),
+              child: const Text("Cek di domain.go.id"),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // 🔥 INPUT DOMAIN
+          const Text(
+            "Nama Domain",
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
+
+          TextField(
+            controller: domainController,
+            decoration: InputDecoration(
+              hintText: "contoh: desaku.id",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
             ),
           ),
         ],
