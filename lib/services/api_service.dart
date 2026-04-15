@@ -27,12 +27,10 @@ class ApiService {
 
       final data = jsonDecode(response.body);
 
-      // ❌ kalau gagal login (401 / 422 dll)
       if (response.statusCode != 200) {
         throw Exception(data['message'] ?? "Login gagal");
       }
 
-      // ✅ pastikan ada role
       if (!data.containsKey('role')) {
         throw Exception("Role tidak ditemukan di response API");
       }

@@ -10,12 +10,17 @@ class AdminHomePage extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F5F5),
       bottomNavigationBar: _buildBottomNav(),
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 20),
-            _buildStats(),
-          ],
+        child: SingleChildScrollView(
+          // 🔥 scroll semua
+          child: Column(
+            children: [
+              _buildHeader(context),
+              const SizedBox(height: 20),
+              _buildStats(),
+              const SizedBox(height: 20),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -52,7 +57,9 @@ class AdminHomePage extends StatelessWidget {
             "Selamat Datang di",
             style: TextStyle(color: Colors.white, fontSize: 14),
           ),
+
           const SizedBox(height: 5),
+
           const Text(
             "Nama Aplikasi",
             style: TextStyle(
@@ -64,22 +71,13 @@ class AdminHomePage extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // 🔥 HERO LOGO (klik untuk pindah halaman)
+          // 🔥 LOGO
           Center(
-            child: Hero(
-              tag: 'logoHero',
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SupportLogo()),
-                  );
-                },
-                child: Image.asset(
-                  'assets/images/logo_diskominfotik.png',
-                  height: 50,
-                ),
-              ),
+            child: Column(
+              children: [
+                Image.asset('assets/images/logo_diskominfotik.png', height: 60),
+                const SizedBox(height: 8),
+              ],
             ),
           ),
         ],
@@ -93,7 +91,8 @@ class AdminHomePage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.count(
         crossAxisCount: 2,
-        shrinkWrap: true,
+        shrinkWrap: true, // 🔥 wajib
+        physics: const NeverScrollableScrollPhysics(), // 🔥 penting
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
         children: const [
@@ -112,6 +111,7 @@ class AdminHomePage extends StatelessWidget {
       currentIndex: 0,
       selectedItemColor: Colors.red,
       unselectedItemColor: Colors.grey,
+      type: BottomNavigationBarType.fixed, // 🔥 biar stabil
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Beranda"),
         BottomNavigationBarItem(icon: Icon(Icons.public), label: "Domain"),
@@ -122,7 +122,6 @@ class AdminHomePage extends StatelessWidget {
   }
 }
 
-// 🧱 CARD
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
