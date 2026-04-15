@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/support_logo.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
@@ -20,6 +21,7 @@ class AdminHomePage extends StatelessWidget {
     );
   }
 
+  // 🔴 HEADER
   Widget _buildHeader(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(16),
@@ -35,6 +37,7 @@ class AdminHomePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🔔 Notifikasi
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
@@ -61,6 +64,7 @@ class AdminHomePage extends StatelessWidget {
 
           const SizedBox(height: 20),
 
+          // 🔥 HERO LOGO (klik untuk pindah halaman)
           Center(
             child: Hero(
               tag: 'logoHero',
@@ -68,7 +72,7 @@ class AdminHomePage extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const DetailLogoPage()),
+                    MaterialPageRoute(builder: (_) => const SupportLogo()),
                   );
                 },
                 child: Image.asset(
@@ -83,6 +87,7 @@ class AdminHomePage extends StatelessWidget {
     );
   }
 
+  // 📊 STATISTIK
   Widget _buildStats() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -101,6 +106,7 @@ class AdminHomePage extends StatelessWidget {
     );
   }
 
+  // 🔻 BOTTOM NAV
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       currentIndex: 0,
@@ -116,6 +122,7 @@ class AdminHomePage extends StatelessWidget {
   }
 }
 
+// 🧱 CARD
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
@@ -147,29 +154,6 @@ class StatCard extends StatelessWidget {
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class DetailLogoPage extends StatelessWidget {
-  const DetailLogoPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Detail Logo"),
-        backgroundColor: Colors.red,
-      ),
-      body: Center(
-        child: Hero(
-          tag: 'logoHero',
-          child: Image.asset(
-            'assets/images/logo_diskominfotik.png',
-            height: 150,
-          ),
-        ),
       ),
     );
   }

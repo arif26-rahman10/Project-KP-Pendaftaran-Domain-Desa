@@ -6,7 +6,6 @@ import '../../widgets/custom_field.dart';
 import '../../widgets/support_logo.dart';
 import '../../widgets/top_pattern.dart';
 import '../home_page.dart';
-import 'register_page.dart';
 import '../admin/home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -22,6 +21,9 @@ class _LoginPageState extends State<LoginPage> {
 
   bool rememberMe = false;
   bool _isLoading = false;
+
+  // 🔥 state untuk icon mata
+  bool _obscurePassword = true;
 
   Future<void> _login() async {
     final username = usernameController.text.trim();
@@ -42,11 +44,8 @@ class _LoginPageState extends State<LoginPage> {
         password: password,
       );
 
-      print("RESPONSE: $result");
-
       if (!mounted) return;
 
-      // 🔥 AMANIN DATA
       final user = result['user'];
 
       if (result['success'] == true && user != null && user is Map) {
@@ -58,6 +57,7 @@ class _LoginPageState extends State<LoginPage> {
           context,
         ).showSnackBar(const SnackBar(content: Text('Login berhasil')));
 
+        // 🔥 routing berdasarkan role
         if (role == 'admin') {
           Navigator.pushReplacement(
             context,
@@ -79,8 +79,6 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       if (!mounted) return;
-
-      print("ERROR LOGIN: $e");
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
@@ -110,6 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 12),
                 const TopPattern(),
                 const SizedBox(height: 28),
+
                 ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: width * 0.62),
                   child: const Text(
@@ -122,29 +121,45 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 12),
+
                 const Text(
                   'Selamat Datang di Nama Aplikasi',
                   style: TextStyle(color: kPrimary, fontSize: 14),
                 ),
+
                 const SizedBox(height: 28),
 
-                // Username
+                // 🔹 Username
                 CustomField(
                   icon: Icons.person_outline,
                   hint: 'Masukkan Username',
                   controller: usernameController,
                 ),
 
-                // Password
+                // 🔹 Password + ICON MATA 🔥
                 CustomField(
                   icon: Icons.lock_outline,
                   hint: 'Password',
-                  obscure: true,
+                  obscure: _obscurePassword,
                   controller: passwordController,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                 ),
 
-                // Remember me (UI only)
+                // 🔹 Remember me
                 Row(
                   children: [
                     SizedBox(
@@ -174,7 +189,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 18),
 
-                // Button Login
+                // 🔹 Button Login
                 SizedBox(
                   width: double.infinity,
                   height: 58,
@@ -208,8 +223,8 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
-                const SizedBox(height: 18),
                 const SizedBox(height: 34),
+
                 const Center(child: SupportLogo()),
               ],
             ),
