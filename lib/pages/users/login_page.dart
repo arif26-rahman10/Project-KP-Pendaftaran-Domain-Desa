@@ -7,6 +7,7 @@ import '../../widgets/support_logo.dart';
 import '../../widgets/top_pattern.dart';
 import '../home_page.dart';
 import 'register_page.dart';
+import '../admin/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -51,17 +52,25 @@ class _LoginPageState extends State<LoginPage> {
       if (result['success'] == true && user != null && user is Map) {
         final name = user['name']?.toString() ?? 'Pengguna';
         final uname = user['username']?.toString() ?? '-';
+        final role = result['role']?.toString() ?? '';
 
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Login berhasil')));
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HomePage(fullName: name, username: uname),
-          ),
-        );
+        if (role == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => AdminHomePage()),
+          );
+        } else if (role == 'desa') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => HomePage(fullName: name, username: uname),
+            ),
+          );
+        }
       } else {
         final message = result['message'] ?? 'Login gagal';
         ScaffoldMessenger.of(

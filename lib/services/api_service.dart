@@ -25,18 +25,19 @@ class ApiService {
         throw Exception("Response kosong dari server");
       }
 
+      final data = jsonDecode(response.body);
+
+      // ❌ kalau gagal login (401 / 422 dll)
       if (response.statusCode != 200) {
-        throw Exception(
-          "Server error (${response.statusCode}): ${response.body}",
-        );
+        throw Exception(data['message'] ?? "Login gagal");
       }
 
-      try {
-        final data = jsonDecode(response.body);
-        return data;
-      } catch (e) {
-        throw Exception("Format response bukan JSON: ${response.body}");
+      // ✅ pastikan ada role
+      if (!data.containsKey('role')) {
+        throw Exception("Role tidak ditemukan di response API");
       }
+
+      return data;
     } catch (e) {
       print("LOGIN ERROR: $e");
       rethrow;

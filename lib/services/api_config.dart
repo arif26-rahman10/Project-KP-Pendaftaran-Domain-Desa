@@ -1,6 +1,6 @@
 class ApiConfig {
   static const String baseUrl =
-      "https://015d-103-166-161-146.ngrok-free.app/api";
+      "https://1cda-103-166-161-146.ngrok-free.app/api";
 
   static const login = "/login";
   static const register = "/register";
