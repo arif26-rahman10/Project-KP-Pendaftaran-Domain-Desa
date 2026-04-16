@@ -22,7 +22,6 @@ class _LoginPageState extends State<LoginPage> {
   bool rememberMe = false;
   bool _isLoading = false;
 
-  // 🔥 state untuk icon mata
   bool _obscurePassword = true;
 
   Future<void> _login() async {
@@ -57,7 +56,6 @@ class _LoginPageState extends State<LoginPage> {
           context,
         ).showSnackBar(const SnackBar(content: Text('Login berhasil')));
 
-        // 🔥 routing berdasarkan role
         if (role == 'admin') {
           Navigator.pushReplacement(
             context,
@@ -131,14 +129,12 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 28),
 
-                // 🔹 Username
                 CustomField(
                   icon: Icons.person_outline,
                   hint: 'Masukkan Username',
                   controller: usernameController,
                 ),
 
-                // 🔹 Password + ICON MATA 🔥
                 CustomField(
                   icon: Icons.lock_outline,
                   hint: 'Password',
