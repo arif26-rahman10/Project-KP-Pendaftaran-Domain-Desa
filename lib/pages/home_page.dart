@@ -8,7 +8,11 @@ class HomePage extends StatelessWidget {
   final String fullName;
   final String username;
 
-  const HomePage({super.key, required this.fullName, required this.username});
+  const HomePage({
+    super.key,
+    required this.fullName,
+    required this.username,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +21,6 @@ class HomePage extends StatelessWidget {
       body: Column(
         children: [
           _buildHeader(fullName),
-
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
@@ -25,9 +28,7 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildPromoSection(context),
-
                   const SizedBox(height: 16),
-
                   _buildInfoSection(),
                 ],
               ),
@@ -35,7 +36,6 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-
       bottomNavigationBar: AppBottomNav(
         currentIndex: 0,
         fullName: fullName,
@@ -44,11 +44,10 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // ================= HEADER =================
   Widget _buildHeader(String name) {
     return Container(
       width: double.infinity,
-      height: 130,
+      padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
       decoration: BoxDecoration(
         color: kPrimary,
         borderRadius: const BorderRadius.only(
@@ -56,20 +55,23 @@ class HomePage extends StatelessWidget {
           bottomRight: Radius.circular(25),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
             'Halo 👋',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 6),
           Text(
             name,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -78,11 +80,12 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // ================= PROMO =================
   Widget _buildPromoSection(BuildContext context) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -90,16 +93,20 @@ class HomePage extends StatelessWidget {
           children: [
             const Text(
               'Belum punya domain desa?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             const Text(
               'Segera daftarkan domain resmi untuk desamu sekarang juga!',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
             ),
             const SizedBox(height: 20),
-
-            // BUTTON
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -107,8 +114,9 @@ class HomePage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                          Step1CheckDomain(data: RegistrationData()),
+                      builder: (_) => Step1CheckDomain(
+                        data: RegistrationData(),
+                      ),
                     ),
                   );
                 },
@@ -119,8 +127,6 @@ class HomePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-
-                // 🔥 tombol lebih kece
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
@@ -144,17 +150,18 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // ================= INFO =================
   Widget _buildInfoSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Informasi',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 10),
-
         Card(
           elevation: 2,
           shape: RoundedRectangleBorder(
@@ -180,7 +187,12 @@ class HomePage extends StatelessWidget {
       children: [
         Icon(Icons.check_circle, color: kPrimary, size: 20),
         const SizedBox(width: 10),
-        Expanded(child: Text(title, style: const TextStyle(fontSize: 14))),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
       ],
     );
   }

@@ -24,10 +24,10 @@ class RegistrationData {
   String kodePos = '';
 
   // ================= WILAYAH =================
-  String provinsi = 'Riau';
-  String kotaKabupaten = 'Bengkalis';
-  String kecamatan = 'Bengkalis';
-  String desaKelurahan = 'Kelapapati';
+  String provinsi = '';
+  String kotaKabupaten = '';
+  String kecamatan = '';
+  String desaKelurahan = '';
 
   // ================= FILE =================
   Map<String, String> filePaths = {};

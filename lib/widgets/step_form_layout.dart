@@ -6,6 +6,7 @@ class StepFormLayout extends StatelessWidget {
   final VoidCallback? onNext;
   final VoidCallback? onBack;
   final String title;
+  final String nextButtonText;
 
   const StepFormLayout({
     super.key,
@@ -14,12 +15,17 @@ class StepFormLayout extends StatelessWidget {
     this.onNext,
     this.onBack,
     this.title = "Pendaftaran Domain",
+    this.nextButtonText = "Berikutnya >",
   });
 
   @override
   Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final isKeyboardOpen = keyboardHeight > 0;
+
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED),
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Column(
           children: [
@@ -31,7 +37,9 @@ class StepFormLayout extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(25),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,9 +58,22 @@ class StepFormLayout extends StatelessWidget {
 
                     const Divider(height: 30),
 
-                    Expanded(child: content),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        child: content,
+                      ),
+                    ),
 
-                    _buildBottomButtons(),
+                    AnimatedPadding(
+                      duration: const Duration(milliseconds: 200),
+                      padding: EdgeInsets.only(
+                        top: 12,
+                        bottom: isKeyboardOpen ? 8 : 0,
+                      ),
+                      child: _buildBottomButtons(),
+                    ),
                   ],
                 ),
               ),
@@ -69,8 +90,12 @@ class StepFormLayout extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(colors: [Colors.red, Colors.redAccent]),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
+        gradient: LinearGradient(
+          colors: [Colors.red, Colors.redAccent],
+        ),
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(25),
+        ),
       ),
       child: Row(
         children: [
@@ -78,11 +103,14 @@ class StepFormLayout extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -109,20 +137,24 @@ class StepFormLayout extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 12,
-                backgroundColor: isActive
-                    ? Colors.red
-                    : Colors.red.withOpacity(0.3),
+                backgroundColor:
+                    isActive ? Colors.red : Colors.red.withOpacity(0.3),
                 child: Text(
                   "${i + 1}",
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
-              Text(
-                steps[i],
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isActive ? Colors.black : Colors.grey,
+              Expanded(
+                child: Text(
+                  steps[i],
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isActive ? Colors.black : Colors.grey,
+                  ),
                 ),
               ),
             ],
@@ -132,14 +164,27 @@ class StepFormLayout extends StatelessWidget {
     );
   }
 
-  // ================= BUTTON =================
+  // ================= BUTTON (SUDAH FIX) =================
   Widget _buildBottomButtons() {
     return Row(
+      mainAxisAlignment: onBack == null
+          ? MainAxisAlignment.end
+          : MainAxisAlignment.spaceBetween,
       children: [
         if (onBack != null)
-          OutlinedButton(onPressed: onBack, child: const Text("Kembali")),
-
-        const Spacer(),
+          OutlinedButton(
+            onPressed: onBack,
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 14,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: const Text("Kembali"),
+          ),
 
         ElevatedButton(
           onPressed: onNext,
@@ -147,11 +192,15 @@ class StepFormLayout extends StatelessWidget {
             backgroundColor: Colors.white,
             foregroundColor: Colors.red,
             elevation: 2,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 14,
+            ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: const Text("Berikutnya >"),
+          child: Text(nextButtonText),
         ),
       ],
     );

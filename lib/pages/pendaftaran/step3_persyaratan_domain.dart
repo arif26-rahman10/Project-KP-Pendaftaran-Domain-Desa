@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/registration_data.dart';
 import '../../widgets/step_form_layout.dart';
 import 'step4_pratinjau.dart';
+import 'pdf_preview_page.dart';
 
 class Step3PersyaratanDomain extends StatefulWidget {
   final RegistrationData data;
@@ -14,31 +15,97 @@ class Step3PersyaratanDomain extends StatefulWidget {
 }
 
 class _Step3PersyaratanDomainState extends State<Step3PersyaratanDomain> {
-  Future<void> _pickFile(String type) async {
+  static const int maxFileSize = 2 * 1024 * 1024; // 2 MB
+
+  Future<void> _pickFile(String type, String title) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+      allowedExtensions: ['pdf'],
     );
 
-    if (result != null) {
-      final file = result.files.single;
+    if (result == null) return;
 
-      if (file.size > 1024 * 1024) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('File maksimal 1MB')));
-        return;
+    final file = result.files.single;
+
+    if (file.extension?.toLowerCase() != 'pdf') {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Hanya file PDF yang diperbolehkan'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (file.size > maxFileSize) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ukuran file maksimal 2 MB'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      widget.data.filePaths[type] = file.path ?? '';
+
+      if (type == 'permohonan') {
+        widget.data.suratPermohonan = file.name;
+      } else if (type == 'kuasa') {
+        widget.data.suratKuasa = file.name;
+      } else if (type == 'penunjukan') {
+        widget.data.suratPenunjukan = file.name;
+      } else if (type == 'pegawai') {
+        widget.data.kartuPegawai = file.name;
+      } else if (type == 'hukum') {
+        widget.data.dasarHukum = file.name;
       }
+    });
 
-      setState(() {
-        widget.data.filePaths[type] = file.path!;
-        if (type == 'permohonan') widget.data.suratPermohonan = file.name;
-        if (type == 'kuasa') widget.data.suratKuasa = file.name;
-        if (type == 'penunjukan') widget.data.suratPenunjukan = file.name;
-        if (type == 'pegawai') widget.data.kartuPegawai = file.name;
-        if (type == 'hukum') widget.data.dasarHukum = file.name;
-      });
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$title berhasil dipilih'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _openPreview(String type, String title) {
+    final filePath = widget.data.filePaths[type];
+
+    if (filePath == null || filePath.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('File belum diunggah'),
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PdfPreviewPage(
+          filePath: filePath,
+          title: title,
+        ),
+      ),
+    );
+  }
+
+  void _handleTap({
+    required String type,
+    required String title,
+    required String fileName,
+  }) {
+    if (fileName.trim().isNotEmpty) {
+      _openPreview(type, title);
+    } else {
+      _pickFile(type, title);
     }
   }
 
@@ -50,56 +117,113 @@ class _Step3PersyaratanDomainState extends State<Step3PersyaratanDomain> {
       onNext: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => Step4Pratinjau(data: widget.data)),
+          MaterialPageRoute(
+            builder: (_) => Step4Pratinjau(data: widget.data),
+          ),
         );
       },
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Unggah Dokumen Persyaratan",
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            "Silakan unggah semua dokumen yang diperlukan",
-            style: TextStyle(fontSize: 12, color: Colors.grey),
-          ),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Unggah Dokumen Persyaratan",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              "Silakan unggah semua dokumen dalam format PDF. Maksimal 2 MB tiap file.",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
 
-          const SizedBox(height: 16),
-
-          _uploadCard(
-            "Surat Permohonan",
-            widget.data.suratPermohonan,
-            "permohonan",
-          ),
-          _uploadCard("Surat Kuasa", widget.data.suratKuasa, "kuasa"),
-          _uploadCard(
-            "Surat Penunjukan",
-            widget.data.suratPenunjukan,
-            "penunjukan",
-          ),
-          _uploadCard("Kartu Pegawai", widget.data.kartuPegawai, "pegawai"),
-          _uploadCard("Dasar Hukum", widget.data.dasarHukum, "hukum"),
-        ],
+            _uploadCard(
+              title: "Surat Permohonan",
+              fileName: widget.data.suratPermohonan,
+              type: "permohonan",
+            ),
+            _uploadCard(
+              title: "Surat Kuasa",
+              fileName: widget.data.suratKuasa,
+              type: "kuasa",
+            ),
+            _uploadCard(
+              title: "Surat Penunjukan",
+              fileName: widget.data.suratPenunjukan,
+              type: "penunjukan",
+            ),
+            _uploadCard(
+              title: "Kartu Pegawai",
+              fileName: widget.data.kartuPegawai,
+              type: "pegawai",
+            ),
+            _uploadCard(
+              title: "Dasar Hukum",
+              fileName: widget.data.dasarHukum,
+              type: "hukum",
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
       ),
     );
   }
 
-  // ================= UI CARD =================
-  Widget _uploadCard(String title, String fileName, String type) {
+  Widget _uploadCard({
+    required String title,
+    required String fileName,
+    required String type,
+  }) {
+    final bool isUploaded = fileName.trim().isNotEmpty;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: ListTile(
-        leading: const Icon(Icons.upload_file, color: Colors.red),
-        title: Text(title),
-        subtitle: Text(
-          fileName.isEmpty ? "Belum ada file" : fileName,
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
+      color: isUploaded ? const Color(0xFFEFFAF0) : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(
+          color: isUploaded ? Colors.green : Colors.grey.shade300,
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-        onTap: () => _pickFile(type),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        leading: Icon(
+          isUploaded ? Icons.check_circle : Icons.picture_as_pdf,
+          color: isUploaded ? Colors.green : Colors.red,
+          size: 28,
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            isUploaded ? fileName : "Belum ada file PDF",
+            style: TextStyle(
+              fontSize: 12,
+              color: isUploaded ? Colors.green : Colors.grey,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        trailing: Icon(
+          isUploaded ? Icons.remove_red_eye : Icons.arrow_forward_ios,
+          size: 18,
+          color: isUploaded ? Colors.green : Colors.grey,
+        ),
+        onTap: () => _handleTap(
+          type: type,
+          title: title,
+          fileName: fileName,
+        ),
       ),
     );
   }
