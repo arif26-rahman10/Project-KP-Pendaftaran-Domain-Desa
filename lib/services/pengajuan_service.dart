@@ -131,4 +131,23 @@ class PengajuanService {
       return false;
     }
   }
+
+  // ================= VERIFIKASI (ADMIN) =================
+  Future<bool> verifikasiPengajuan({
+    required int id,
+    required String status,
+    required String catatan,
+  }) async {
+    try {
+      final res = await dio.post(
+        "/admin/verifikasi/$id",
+        data: {"status": status, "catatan": catatan},
+      );
+
+      return res.data['success'] == true;
+    } catch (e) {
+      print("Error verifikasi: $e");
+      return false;
+    }
+  }
 }

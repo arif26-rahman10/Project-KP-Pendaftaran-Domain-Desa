@@ -3,6 +3,7 @@ import '../../services/pengajuan_service.dart';
 import '../../models/pengajuan_model.dart';
 import '../../widgets/domain_card.dart';
 import '../../widgets/admin_bottom_nav.dart';
+import 'admin_detail_domain.dart';
 
 class DomainPage extends StatefulWidget {
   const DomainPage({super.key});
@@ -12,12 +13,25 @@ class DomainPage extends StatefulWidget {
 }
 
 class _DomainPageState extends State<DomainPage> {
-  late Future<List<Pengajuan>> futureData;
+  List<Pengajuan> list = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    futureData = PengajuanService().getPengajuanAdmin();
+    getData();
+  }
+
+  // 🔥 FUNCTION RELOAD DATA
+  Future<void> getData() async {
+    setState(() => isLoading = true);
+
+    final res = await PengajuanService().getPengajuanAdmin();
+
+    setState(() {
+      list = res;
+      isLoading = false;
+    });
   }
 
   @override
@@ -34,35 +48,34 @@ class _DomainPageState extends State<DomainPage> {
 
       bottomNavigationBar: const AdminBottomNav(currentIndex: 1),
 
-      body: FutureBuilder<List<Pengajuan>>(
-        future: futureData,
-        builder: (context, snapshot) {
-          // LOADING
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : list.isEmpty
+          ? const Center(child: Text("Tidak ada data"))
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: list.length,
+              itemBuilder: (context, index) {
+                final item = list[index];
 
-          // ERROR
-          if (snapshot.hasError) {
-            return const Center(child: Text("Terjadi kesalahan"));
-          }
+                return DomainCard(
+                  item: item,
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DetailDomainPage(data: item),
+                      ),
+                    );
 
-          // KOSONG
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Tidak ada data"));
-          }
-
-          final data = snapshot.data!;
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: data.length,
-            itemBuilder: (context, index) {
-              return DomainCard(item: data[index]);
-            },
-          );
-        },
-      ),
+                    // 🔥 INI KUNCINYA
+                    if (result == true) {
+                      getData(); // reload dari API
+                    }
+                  },
+                );
+              },
+            ),
     );
   }
 }

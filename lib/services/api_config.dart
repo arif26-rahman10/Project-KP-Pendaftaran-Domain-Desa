@@ -10,4 +10,5 @@ class ApiConfig {
   // ADMIN
   static const getPengajuan = "/admin/pengajuan";
   static const aktivasi = "/admin/aktivasi";
+  static const verifikasi = "/pengajuan/verifikasi";
 }

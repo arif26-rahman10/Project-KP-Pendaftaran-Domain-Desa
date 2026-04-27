@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/pengajuan_model.dart';
-import '../../widgets/admin_bottom_nav.dart';
+import '../../services/pengajuan_service.dart';
 
 class DetailDomainPage extends StatefulWidget {
   final Pengajuan data;
@@ -12,9 +12,15 @@ class DetailDomainPage extends StatefulWidget {
 }
 
 class _DetailDomainPageState extends State<DetailDomainPage> {
-  String selectedStatus = "disetujui";
-  bool kirimEmail = true;
-  TextEditingController catatan = TextEditingController();
+  String selectedStatus = '';
+  final TextEditingController catatan = TextEditingController();
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedStatus = widget.data.status;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,26 +28,28 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Detail Dokumen"),
+        title: const Text("Detail Pengajuan"),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // ================= INFORMASI INSTANSI =================
-            sectionTitle("Informasi Instansi"),
-            infoTile("Nama Instansi", item.namaDesa),
-            infoTile("Nama Domain", item.domain),
-            infoTile("Tanggal Pengajuan", item.tanggal),
+            _sectionTitle("Informasi Instansi"),
+            _infoTile("Nama Instansi", item.namaDesa),
+            _infoTile("Nama Domain", item.domain),
+            _infoTile("Tanggal", item.tanggal),
+            _infoTile("Status", _statusText(item.status)),
+
+            const SizedBox(height: 10),
 
             // ================= DOKUMEN =================
-            sectionTitle("Dokumen Persyaratan"),
-            fileTile("Surat Permohonan"),
-            fileTile("Surat Kuasa"),
-            fileTile("Kartu Pegawai"),
-            fileTile("Dasar Hukum"),
-            fileTile("Surat Penunjukan"),
+            _sectionTitle("Dokumen Persyaratan"),
+            _fileTile("Surat Permohonan"),
+            _fileTile("Surat Kuasa"),
+            _fileTile("Kartu Pegawai"),
+            _fileTile("Dasar Hukum"),
+            _fileTile("Surat Penunjukan"),
 
             const SizedBox(height: 20),
 
@@ -59,71 +67,93 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
                     "Hasil Verifikasi",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-
                   const SizedBox(height: 10),
 
-                  // RADIO BUTTON
-                  Row(
-                    children: [
-                      Radio(
-                        value: "disetujui",
-                        groupValue: selectedStatus,
-                        onChanged: (val) {
-                          setState(() {
-                            selectedStatus = val!;
-                          });
-                        },
+                  // STATUS AKTIF (LOCK)
+                  if (item.status == 'aktif') ...[
+                    const Text(
+                      "Domain sudah aktif dan tidak dapat diubah",
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const Text("Disetujui"),
-
-                      Radio(
-                        value: "perbaikan",
-                        groupValue: selectedStatus,
-                        onChanged: (val) {
-                          setState(() {
-                            selectedStatus = val!;
-                          });
-                        },
-                      ),
-                      const Text("Perlu Perbaikan"),
-                    ],
-                  ),
-
-                  // CHECKBOX
-                  CheckboxListTile(
-                    value: kirimEmail,
-                    onChanged: (val) {
-                      setState(() {
-                        kirimEmail = val!;
-                      });
-                    },
-                    title: const Text("Kirim konfirmasi pembayaran"),
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),
-
-                  // CATATAN
-                  TextField(
-                    controller: catatan,
-                    decoration: const InputDecoration(hintText: "Catatan..."),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // BUTTON
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                      onPressed: () {
-                        // TODO: kirim ke API
-                        print("Status: $selectedStatus");
-                        print("Catatan: ${catatan.text}");
-                      },
-                      child: const Text("Kirim"),
                     ),
-                  ),
+                  ] else ...[
+                    //RADIO STATUS
+                    RadioListTile(
+                      value: "diproses",
+                      groupValue: selectedStatus,
+                      onChanged: (val) {
+                        setState(() => selectedStatus = val!);
+                      },
+                      title: const Text("Diproses"),
+                    ),
+                    RadioListTile(
+                      value: "perbaikan",
+                      groupValue: selectedStatus,
+                      onChanged: (val) {
+                        setState(() => selectedStatus = val!);
+                      },
+                      title: const Text("Perlu Perbaikan"),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    //CATATAN
+                    TextField(
+                      controller: catatan,
+                      decoration: const InputDecoration(
+                        hintText: "Catatan...",
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    //BUTTON
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        onPressed: isLoading
+                            ? null
+                            : () async {
+                                if (selectedStatus.isEmpty) return;
+
+                                setState(() => isLoading = true);
+
+                                try {
+                                  await PengajuanService().verifikasiPengajuan(
+                                    id: item.id,
+                                    status: selectedStatus,
+                                    catatan: catatan.text,
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Berhasil verifikasi"),
+                                    ),
+                                  );
+
+                                  Navigator.pop(context, true); // refresh list
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Gagal: $e")),
+                                  );
+                                } finally {
+                                  setState(() => isLoading = false);
+                                }
+                              },
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text("Kirim"),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -133,9 +163,7 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
     );
   }
 
-  // ================= WIDGET =================
-
-  Widget sectionTitle(String title) {
+  Widget _sectionTitle(String title) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -144,18 +172,33 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
     );
   }
 
-  Widget infoTile(String label, String value) {
+  Widget _infoTile(String label, String value) {
     return ListTile(
       title: Text(label, style: const TextStyle(color: Colors.blue)),
       trailing: Text(value),
     );
   }
 
-  Widget fileTile(String title) {
+  Widget _fileTile(String title) {
     return ListTile(
       title: Text(title),
       trailing: const Text("Lihat", style: TextStyle(color: Colors.blue)),
       onTap: () {},
     );
+  }
+
+  String _statusText(String status) {
+    switch (status) {
+      case 'ditinjau':
+        return "Menunggu Verifikasi";
+      case 'diproses':
+        return "Sedang Diproses";
+      case 'perlu_perbaikan':
+        return "Perlu Perbaikan";
+      case 'aktif':
+        return "Domain Aktif";
+      default:
+        return status;
+    }
   }
 }
