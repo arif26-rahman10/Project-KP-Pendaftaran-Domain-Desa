@@ -90,10 +90,14 @@ class PengajuanService {
     try {
       final res = await dio.get(ApiConfig.getPengajuan);
 
-      return (res.data['data'] as List)
-          .map((e) => Pengajuan.fromJson(e))
-          .toList();
+      // DEBUG
+      print("RESPONSE API: ${res.data}");
+
+      final List list = res.data['data'];
+
+      return list.map((e) => Pengajuan.fromJson(e)).toList();
     } catch (e) {
+      print("ERROR SERVICE: $e");
       return [];
     }
   }

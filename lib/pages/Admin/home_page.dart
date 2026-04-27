@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../widgets/support_logo.dart';
+import '../../widgets/admin_bottom_nav.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
@@ -8,16 +8,17 @@ class AdminHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      bottomNavigationBar: _buildBottomNav(),
+
+      // 🔥 GANTI NAVBAR
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 0),
+
       body: SafeArea(
         child: SingleChildScrollView(
-          // 🔥 scroll semua
           child: Column(
             children: [
-              _buildHeader(context),
+              _buildHeader(),
               const SizedBox(height: 20),
               _buildStats(),
-              const SizedBox(height: 20),
               const SizedBox(height: 20),
             ],
           ),
@@ -27,7 +28,7 @@ class AdminHomePage extends StatelessWidget {
   }
 
   // 🔴 HEADER
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader() {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
@@ -43,9 +44,9 @@ class AdminHomePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 🔔 Notifikasi
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               SizedBox(),
               Icon(Icons.notifications, color: Colors.white),
             ],
@@ -61,7 +62,7 @@ class AdminHomePage extends StatelessWidget {
           const SizedBox(height: 5),
 
           const Text(
-            "Nama Aplikasi",
+            "Domain Desa",
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -73,11 +74,9 @@ class AdminHomePage extends StatelessWidget {
 
           // 🔥 LOGO
           Center(
-            child: Column(
-              children: [
-                Image.asset('assets/images/logo_diskominfotik.png', height: 60),
-                const SizedBox(height: 8),
-              ],
+            child: Image.asset(
+              'assets/images/logo_diskominfotik.png',
+              height: 60,
             ),
           ),
         ],
@@ -91,37 +90,22 @@ class AdminHomePage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.count(
         crossAxisCount: 2,
-        shrinkWrap: true, // 🔥 wajib
-        physics: const NeverScrollableScrollPhysics(), // 🔥 penting
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
         children: const [
           StatCard(title: "Domain Aktif", value: "10"),
           StatCard(title: "Pengajuan Domain", value: "5"),
           StatCard(title: "Menunggu Pembayaran", value: "3"),
-          StatCard(title: "Dokumen Perlu Verifikasi", value: "2"),
+          StatCard(title: "Perlu Verifikasi", value: "2"),
         ],
       ),
     );
   }
-
-  // 🔻 BOTTOM NAV
-  Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      selectedItemColor: Colors.red,
-      unselectedItemColor: Colors.grey,
-      type: BottomNavigationBarType.fixed, // 🔥 biar stabil
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Beranda"),
-        BottomNavigationBarItem(icon: Icon(Icons.public), label: "Domain"),
-        BottomNavigationBarItem(icon: Icon(Icons.receipt), label: "Faktur"),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
-      ],
-    );
-  }
 }
 
+// ================= CARD =================
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
