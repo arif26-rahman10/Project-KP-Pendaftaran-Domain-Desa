@@ -38,7 +38,11 @@
         </scene>
     </scenes>
     <resources>
+<<<<<<< HEAD
         <image name="LaunchImage" width="2267" height="371"/>
+=======
+        <image name="LaunchImage" width="168" height="185"/>
+>>>>>>> b2ea2d1 (Perbaikian upload dokumen)
         <image name="LaunchBackground" width="1" height="1"/>
     </resources>
 </document>
