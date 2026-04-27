@@ -29,9 +29,16 @@ class RegistrationData {
   String kecamatan = '';
   String desaKelurahan = '';
 
-  // ================= FILE =================
-  Map<String, String> filePaths = {};
+  // ================= FILE PATH =================
+  Map<String, String> filePaths = {
+    'permohonan': '',
+    'kuasa': '',
+    'penunjukan': '',
+    'pegawai': '',
+    'hukum': '',
+  };
 
+  // ================= NAMA FILE =================
   String suratPermohonan = '';
   String suratKuasa = '';
   String suratPenunjukan = '';

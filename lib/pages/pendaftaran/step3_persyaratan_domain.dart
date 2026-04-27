@@ -64,14 +64,6 @@ class _Step3PersyaratanDomainState extends State<Step3PersyaratanDomain> {
         widget.data.dasarHukum = file.name;
       }
     });
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$title berhasil dipilih'),
-        backgroundColor: Colors.green,
-      ),
-    );
   }
 
   void _openPreview(String type, String title) {
@@ -109,19 +101,39 @@ class _Step3PersyaratanDomainState extends State<Step3PersyaratanDomain> {
     }
   }
 
+  bool _isAllFilesUploaded() {
+    return widget.data.suratPermohonan.trim().isNotEmpty &&
+        widget.data.suratKuasa.trim().isNotEmpty &&
+        widget.data.suratPenunjukan.trim().isNotEmpty &&
+        widget.data.kartuPegawai.trim().isNotEmpty &&
+        widget.data.dasarHukum.trim().isNotEmpty;
+  }
+
+  void _goToNextStep() {
+    if (!_isAllFilesUploaded()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Harap unggah semua dokumen terlebih dahulu'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Step4Pratinjau(data: widget.data),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StepFormLayout(
       activeStep: 2,
       onBack: () => Navigator.pop(context),
-      onNext: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => Step4Pratinjau(data: widget.data),
-          ),
-        );
-      },
+      onNext: _goToNextStep,
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
