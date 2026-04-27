@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'api_config.dart';
-import 'dart:io';
+import '../models/pengajuan_model.dart';
 
 class PengajuanService {
   late Dio dio;
@@ -25,14 +25,14 @@ class PengajuanService {
         data: {'nama_domain': domain},
       );
 
-      return res.data['available'];
+      return res.data['available'] == true;
     } catch (e) {
       print("Error check domain: $e");
       return false;
     }
   }
 
-  // ================= SUBMIT =================
+  // ================= SUBMIT (USER) =================
   Future<bool> submitPengajuan({
     required String domain,
     required Map<String, String> data,
@@ -41,14 +41,14 @@ class PengajuanService {
     try {
       FormData formData = FormData();
 
-      // ================= TEXT =================
+      // TEXT
       formData.fields.add(MapEntry('nama_domain', domain));
 
       data.forEach((key, value) {
         formData.fields.add(MapEntry(key, value));
       });
 
-      // ================= FILE =================
+      // FILE
       Future<void> addFile(String key, String? path) async {
         if (path != null && path.isNotEmpty) {
           formData.files.add(
@@ -56,28 +56,24 @@ class PengajuanService {
               key,
               await MultipartFile.fromFile(
                 path,
-                filename: path.split('/').last, // 🔥 penting
+                filename: path.split('/').last,
               ),
             ),
           );
         }
       }
 
-      // 🔥 WAJIB SAMA DENGAN LARAVEL
       await addFile('surat_permohonan', files['surat_permohonan']);
       await addFile('surat_kuasa', files['surat_kuasa']);
       await addFile('surat_penunjukan', files['surat_penunjukan']);
       await addFile('kartu_pegawai', files['kartu_pegawai']);
       await addFile('dasar_hukum', files['dasar_hukum']);
 
-      // ================= REQUEST =================
       final res = await dio.post(
         ApiConfig.submitPengajuan,
         data: formData,
         options: Options(headers: {"Content-Type": "multipart/form-data"}),
       );
-
-      print("RESPONSE: ${res.data}");
 
       return res.data['success'] == true;
     } on DioException catch (e) {
@@ -85,6 +81,49 @@ class PengajuanService {
       return false;
     } catch (e) {
       print("Error submit: $e");
+      return false;
+    }
+  }
+
+  // ================= GET LIST (ADMIN) =================
+  Future<List<Pengajuan>> getPengajuanAdmin() async {
+    try {
+      final res = await dio.get(ApiConfig.getPengajuan);
+
+      return (res.data['data'] as List)
+          .map((e) => Pengajuan.fromJson(e))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // ================= FILTER STATUS =================
+  Future<List<dynamic>> getByStatus(String status) async {
+    try {
+      final res = await dio.get(
+        ApiConfig.getPengajuan,
+        queryParameters: {'status': status},
+      );
+
+      return res.data['data'] ?? [];
+    } catch (e) {
+      print("Error filter: $e");
+      return [];
+    }
+  }
+
+  // ================= AKTIVASI (ADMIN) =================
+  Future<bool> aktivasiPengajuan(int id) async {
+    try {
+      final res = await dio.post("${ApiConfig.aktivasi}/$id");
+
+      return res.data['success'] == true;
+    } on DioException catch (e) {
+      print("Error aktivasi: ${e.response?.data}");
+      return false;
+    } catch (e) {
+      print("Error aktivasi: $e");
       return false;
     }
   }
