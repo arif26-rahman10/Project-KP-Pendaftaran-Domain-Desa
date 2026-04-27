@@ -22,11 +22,11 @@ class DomainCard extends StatelessWidget {
   String getStatusText(String status) {
     switch (status) {
       case 'ditinjau':
-        return "Perlu Verifikasi";
+        return "Ditinjau";
       case 'diproses':
-        return "Minta Perbaikan";
+        return "diproses";
       case 'aktif':
-        return "Disetujui";
+        return "aktif";
       default:
         return status;
     }
