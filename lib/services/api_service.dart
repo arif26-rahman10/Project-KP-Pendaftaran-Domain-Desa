@@ -6,10 +6,7 @@ import 'registration_data.dart';
 
 class ApiService {
   static Map<String, String> _headers() {
-    return {
-      "Accept": "application/json",
-      "Content-Type": "application/json",
-    };
+    return {"Accept": "application/json", "Content-Type": "application/json"};
   }
 
   static Future<Map<String, dynamic>> login({
@@ -20,10 +17,7 @@ class ApiService {
       final response = await http.post(
         Uri.parse("${ApiConfig.baseUrl}${ApiConfig.login}"),
         headers: _headers(),
-        body: jsonEncode({
-          "username": username,
-          "password": password,
-        }),
+        body: jsonEncode({"username": username, "password": password}),
       );
 
       print("STATUS: ${response.statusCode}");
@@ -98,16 +92,7 @@ class ApiService {
 
       FormData formData = FormData.fromMap({
         "nama_domain": data.namaDomain,
-        "username": data.username,
-        "password": data.password,
-        "name": data.name,
-        "email": data.email,
-        "no_hp": data.noHp,
-        "role": data.role,
         "nama_desa": data.namaDesa,
-        "nama_kepala_desa": data.namaKepalaDesa,
-        "nip_kepala_desa": data.nipKepalaDesa,
-        "klasifikasi_instansi": data.klasifikasiInstansi,
         "telepon": data.telepon,
         "faksimili": data.faksimili,
         "alamat": data.alamat,
@@ -118,93 +103,62 @@ class ApiService {
         "desa_kelurahan": data.desaKelurahan,
       });
 
-      if ((data.filePaths['permohonan'] ?? '').isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            "surat_permohonan",
-            await MultipartFile.fromFile(
-              data.filePaths['permohonan']!,
-              filename: data.suratPermohonan,
+      Future<void> addFile(String key, String? path, String? filename) async {
+        if (path != null && path.isNotEmpty) {
+          formData.files.add(
+            MapEntry(
+              key,
+              await MultipartFile.fromFile(
+                path,
+                filename: filename ?? path.split('/').last,
+              ),
             ),
-          ),
-        );
+          );
+          print("FILE OK: $key");
+        } else {
+          throw Exception("File $key wajib diisi");
+        }
       }
 
-      if ((data.filePaths['kuasa'] ?? '').isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            "surat_kuasa",
-            await MultipartFile.fromFile(
-              data.filePaths['kuasa']!,
-              filename: data.suratKuasa,
-            ),
-          ),
-        );
-      }
-
-      if ((data.filePaths['penunjukan'] ?? '').isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            "surat_penunjukan",
-            await MultipartFile.fromFile(
-              data.filePaths['penunjukan']!,
-              filename: data.suratPenunjukan,
-            ),
-          ),
-        );
-      }
-
-      if ((data.filePaths['pegawai'] ?? '').isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            "kartu_pegawai",
-            await MultipartFile.fromFile(
-              data.filePaths['pegawai']!,
-              filename: data.kartuPegawai,
-            ),
-          ),
-        );
-      }
-
-      if ((data.filePaths['hukum'] ?? '').isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            "dasar_hukum",
-            await MultipartFile.fromFile(
-              data.filePaths['hukum']!,
-              filename: data.dasarHukum,
-            ),
-          ),
-        );
-      }
+      await addFile(
+        "surat_permohonan",
+        data.filePaths['surat_permohonan'],
+        data.suratPermohonan,
+      );
+      await addFile(
+        "perda_pembentukan_desa",
+        data.filePaths['perda_pembentukan_desa'],
+        data.perdaPembentukanDesa,
+      );
+      await addFile(
+        "surat_kuasa",
+        data.filePaths['surat_kuasa'],
+        data.suratKuasa,
+      );
+      await addFile(
+        "surat_penunjukan_pejabat",
+        data.filePaths['surat_penunjukan_pejabat'],
+        data.suratPenunjukan,
+      );
+      await addFile(
+        "ktp_asn_pejabat",
+        data.filePaths['ktp_asn_pejabat'],
+        data.ktpAsnPejabat,
+      );
 
       final response = await dio.post(
         "${ApiConfig.baseUrl}/pengajuan/submit",
         data: formData,
-        options: Options(
-          headers: {
-            "Accept": "application/json",
-          },
-        ),
+        options: Options(headers: {"Accept": "application/json"}),
       );
 
-      print("SUBMIT STATUS: ${response.statusCode}");
-      print("SUBMIT BODY: ${response.data}");
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.data}");
 
-      if (response.data is Map<String, dynamic>) {
-        return response.data;
-      }
-
-      return {
-        "success": true,
-        "message": "Pengajuan berhasil dikirim",
-      };
+      return response.data;
     } on DioException catch (e) {
-      print("SUBMIT ERROR: ${e.response?.data}");
-      throw Exception(
-        e.response?.data?['message'] ??
-            "Gagal mengirim data ke server",
-      );
+      print("ERROR: ${e.response?.data}");
+      throw Exception(e.response?.data?['message'] ?? "Gagal mengirim data");
     } catch (e) {
       throw Exception("Terjadi kesalahan: $e");
     }

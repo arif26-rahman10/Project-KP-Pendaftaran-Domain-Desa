@@ -1,47 +1,28 @@
 class RegistrationData {
-  // ================= DOMAIN =================
   String namaDomain = '';
-  bool isDomainAvailable = false;
 
-  // ================= AKUN =================
-  String username = '';
-  String password = '';
-  String name = '';
-  String email = '';
-  String noHp = '';
-  String role = 'desa';
-
-  // ================= DATA DESA =================
   String namaDesa = '';
-  String namaKepalaDesa = '';
-  String nipKepalaDesa = '';
-  String klasifikasiInstansi = 'Pemerintah Desa';
-
-  // ================= KONTAK =================
   String telepon = '';
   String faksimili = '';
   String alamat = '';
   String kodePos = '';
 
-  // ================= WILAYAH =================
   String provinsi = '';
   String kotaKabupaten = '';
   String kecamatan = '';
   String desaKelurahan = '';
 
-  // ================= FILE PATH =================
   Map<String, String> filePaths = {
-    'permohonan': '',
-    'kuasa': '',
-    'penunjukan': '',
-    'pegawai': '',
-    'hukum': '',
+    "surat_permohonan": "",
+    "perda_pembentukan_desa": "",
+    "surat_kuasa": "",
+    "surat_penunjukan_pejabat": "",
+    "ktp_asn_pejabat": "",
   };
 
-  // ================= NAMA FILE =================
   String suratPermohonan = '';
+  String perdaPembentukanDesa = '';
   String suratKuasa = '';
   String suratPenunjukan = '';
-  String kartuPegawai = '';
-  String dasarHukum = '';
+  String ktpAsnPejabat = '';
 }

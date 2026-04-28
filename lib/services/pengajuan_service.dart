@@ -41,14 +41,20 @@ class PengajuanService {
     try {
       FormData formData = FormData();
 
-      // TEXT
+      // ================= TEXT =================
       formData.fields.add(MapEntry('nama_domain', domain));
 
       data.forEach((key, value) {
         formData.fields.add(MapEntry(key, value));
       });
 
-      // FILE
+      // DEBUG (WAJIB BIAR KELIHATAN)
+      print("=== DATA DIKIRIM ===");
+      for (var f in formData.fields) {
+        print("${f.key} = ${f.value}");
+      }
+
+      // ================= FILE =================
       Future<void> addFile(String key, String? path) async {
         if (path != null && path.isNotEmpty) {
           formData.files.add(
@@ -60,6 +66,9 @@ class PengajuanService {
               ),
             ),
           );
+          print("FILE OK: $key");
+        } else {
+          print("FILE KOSONG: $key");
         }
       }
 
@@ -69,18 +78,17 @@ class PengajuanService {
       await addFile('kartu_pegawai', files['kartu_pegawai']);
       await addFile('dasar_hukum', files['dasar_hukum']);
 
-      final res = await dio.post(
-        ApiConfig.submitPengajuan,
-        data: formData,
-        options: Options(headers: {"Content-Type": "multipart/form-data"}),
-      );
+      // ================= REQUEST =================
+      final res = await dio.post(ApiConfig.submitPengajuan, data: formData);
+
+      print("RESPONSE: ${res.data}");
 
       return res.data['success'] == true;
     } on DioException catch (e) {
-      print("Dio Error: ${e.response?.data}");
+      print("DIO ERROR: ${e.response?.data}");
       return false;
     } catch (e) {
-      print("Error submit: $e");
+      print("ERROR: $e");
       return false;
     }
   }

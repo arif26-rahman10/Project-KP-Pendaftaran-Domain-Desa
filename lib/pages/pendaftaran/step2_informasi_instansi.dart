@@ -6,10 +6,7 @@ import 'step3_persyaratan_domain.dart';
 class Step2InformasiInstansi extends StatefulWidget {
   final RegistrationData data;
 
-  const Step2InformasiInstansi({
-    super.key,
-    required this.data,
-  });
+  const Step2InformasiInstansi({super.key, required this.data});
 
   @override
   State<Step2InformasiInstansi> createState() => _Step2InformasiInstansiState();
@@ -19,7 +16,6 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController namaDesaController;
-  late final TextEditingController kepalaDesaController;
   late final TextEditingController teleponController;
   late final TextEditingController alamatController;
   late final TextEditingController kodePosController;
@@ -28,33 +24,50 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
   String? selectedProvinsi;
   String? selectedKabupaten;
   String? selectedKecamatan;
+  String? selectedDesa;
+
+  // ================= DATA WILAYAH =================
+  final Map<String, dynamic> addressData = {
+    "Riau": {
+      "Bengkalis": {
+        "Bengkalis": [
+          "Air Putih",
+          "Damai",
+          "Kelapapati",
+          "Kelebuk",
+          "Kelemantan",
+          "Kelemantan Barat",
+        ],
+        "Mandau": ["Duri", "Balik Alam", "Pematang Pudu", "Guntung"],
+      },
+      "Pekanbaru": {
+        "Sukajadi": ["Sukajadi", "Paledang"],
+        "Rumbai": ["Umban Sari", "Sri Meranti"],
+      },
+    },
+  };
+
+  List<String> provinsiList = [];
+  List<String> kabupatenList = [];
+  List<String> kecamatanList = [];
+  List<String> desaList = [];
 
   @override
   void initState() {
     super.initState();
 
     namaDesaController = TextEditingController(text: widget.data.namaDesa);
-    kepalaDesaController = TextEditingController(
-      text: widget.data.namaKepalaDesa,
-    );
     teleponController = TextEditingController(text: widget.data.telepon);
     alamatController = TextEditingController(text: widget.data.alamat);
     kodePosController = TextEditingController(text: widget.data.kodePos);
     faksimiliController = TextEditingController(text: widget.data.faksimili);
 
-    selectedProvinsi =
-        widget.data.provinsi.isNotEmpty ? widget.data.provinsi : null;
-    selectedKabupaten = widget.data.kotaKabupaten.isNotEmpty
-        ? widget.data.kotaKabupaten
-        : null;
-    selectedKecamatan =
-        widget.data.kecamatan.isNotEmpty ? widget.data.kecamatan : null;
+    provinsiList = addressData.keys.toList();
   }
 
   @override
   void dispose() {
     namaDesaController.dispose();
-    kepalaDesaController.dispose();
     teleponController.dispose();
     alamatController.dispose();
     kodePosController.dispose();
@@ -65,7 +78,6 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
   void _nextStep() {
     if (_formKey.currentState!.validate()) {
       widget.data.namaDesa = namaDesaController.text.trim();
-      widget.data.namaKepalaDesa = kepalaDesaController.text.trim();
       widget.data.telepon = teleponController.text.trim();
       widget.data.alamat = alamatController.text.trim();
       widget.data.kodePos = kodePosController.text.trim();
@@ -74,6 +86,7 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
       widget.data.provinsi = selectedProvinsi ?? '';
       widget.data.kotaKabupaten = selectedKabupaten ?? '';
       widget.data.kecamatan = selectedKecamatan ?? '';
+      widget.data.desaKelurahan = selectedDesa ?? '';
 
       Navigator.push(
         context,
@@ -95,58 +108,92 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _input(namaDesaController, "Nama Desa *", true),
-              _input(kepalaDesaController, "Nama Kepala Desa *", true),
+              _input(namaDesaController, "Nama Desa", true),
               _input(
                 teleponController,
-                "Telepon *",
+                "Telepon",
                 true,
                 keyboardType: TextInputType.phone,
               ),
-              _input(
-                faksimiliController,
-                "Faksimili",
-                false,
-                keyboardType: TextInputType.phone,
-              ),
-              _input(alamatController, "Alamat *", true, maxLines: 3),
+              _input(faksimiliController, "Faksimili", false),
+              _input(alamatController, "Alamat", true, maxLines: 3),
 
+              // ================= PROVINSI =================
               _dropdown(
-                label: "Provinsi *",
+                label: "Provinsi",
                 value: selectedProvinsi,
-                items: const ["Riau"],
+                items: provinsiList,
                 onChanged: (v) {
                   setState(() {
                     selectedProvinsi = v;
+                    selectedKabupaten = null;
+                    selectedKecamatan = null;
+                    selectedDesa = null;
+
+                    kabupatenList = (addressData[v] as Map<String, dynamic>)
+                        .keys
+                        .toList();
+
+                    kecamatanList = [];
+                    desaList = [];
                   });
                 },
               ),
 
+              // ================= KABUPATEN =================
               _dropdown(
-                label: "Kabupaten *",
+                label: "Kabupaten",
                 value: selectedKabupaten,
-                items: const ["Bengkalis"],
+                items: kabupatenList,
                 onChanged: (v) {
                   setState(() {
                     selectedKabupaten = v;
+                    selectedKecamatan = null;
+                    selectedDesa = null;
+
+                    kecamatanList =
+                        (addressData[selectedProvinsi]![v]
+                                as Map<String, dynamic>)
+                            .keys
+                            .toList();
+
+                    desaList = [];
                   });
                 },
               ),
 
+              // ================= KECAMATAN =================
               _dropdown(
-                label: "Kecamatan *",
+                label: "Kecamatan",
                 value: selectedKecamatan,
-                items: const ["Bengkalis", "Bantan"],
+                items: kecamatanList,
                 onChanged: (v) {
                   setState(() {
                     selectedKecamatan = v;
+                    selectedDesa = null;
+
+                    desaList = List<String>.from(
+                      addressData[selectedProvinsi]![selectedKabupaten]![v],
+                    );
+                  });
+                },
+              ),
+
+              // ================= DESA =================
+              _dropdown(
+                label: "Desa / Kelurahan",
+                value: selectedDesa,
+                items: desaList,
+                onChanged: (v) {
+                  setState(() {
+                    selectedDesa = v;
                   });
                 },
               ),
 
               _input(
                 kodePosController,
-                "Kode Pos *",
+                "Kode Pos",
                 true,
                 keyboardType: TextInputType.number,
               ),
@@ -157,6 +204,7 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
     );
   }
 
+  // ================= INPUT =================
   Widget _input(
     TextEditingController controller,
     String label,
@@ -170,42 +218,25 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black87,
-        ),
         decoration: InputDecoration(
-          hintText: label,
-          hintStyle: TextStyle(
-            color: Colors.grey.withOpacity(0.65),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: Colors.grey.shade300,
+          label: RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(color: Colors.black),
+              children: required
+                  ? const [
+                      TextSpan(
+                        text: ' *',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ]
+                  : [],
             ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: Colors.grey.shade400,
-            ),
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: Colors.grey.shade300,
-            ),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 14,
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
         validator: (v) {
-          if (required && (v == null || v.trim().isEmpty)) {
+          if (required && (v == null || v.isEmpty)) {
             return 'Wajib diisi';
           }
           return null;
@@ -214,6 +245,7 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
     );
   }
 
+  // ================= DROPDOWN =================
   Widget _dropdown({
     required String label,
     required String? value,
@@ -224,51 +256,26 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
       padding: const EdgeInsets.only(bottom: 14),
       child: DropdownButtonFormField<String>(
         value: value,
-        decoration: InputDecoration(
-          hintText: label,
-          hintStyle: TextStyle(
-            color: Colors.grey.withOpacity(0.65),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: Colors.grey.shade300,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: Colors.grey.shade400,
-            ),
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: Colors.grey.shade300,
-            ),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 14,
-          ),
-        ),
         items: items
-            .map(
-              (e) => DropdownMenuItem<String>(
-                value: e,
-                child: Text(e),
-              ),
-            )
+            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
             .toList(),
         onChanged: onChanged,
-        validator: (v) {
-          if (v == null || v.isEmpty) {
-            return 'Wajib dipilih';
-          }
-          return null;
-        },
+        decoration: InputDecoration(
+          label: RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(color: Colors.black),
+              children: const [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ],
+            ),
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        validator: (v) => v == null || v.isEmpty ? 'Wajib dipilih' : null,
       ),
     );
   }

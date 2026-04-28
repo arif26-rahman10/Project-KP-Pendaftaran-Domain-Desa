@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/registration_data.dart';
 import '../../widgets/step_form_layout.dart';
+import 'pdf_preview_page.dart';
 
 class Step4Pratinjau extends StatefulWidget {
   final RegistrationData data;
@@ -25,7 +26,7 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] ?? "Pengajuan berhasil dikirim"),
+          content: Text(result['message'] ?? "Berhasil dikirim"),
           backgroundColor: Colors.green,
         ),
       );
@@ -41,10 +42,22 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
         ),
       );
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  // ================= PREVIEW FILE =================
+  void _openFile(String type, String title) {
+    final path = widget.data.filePaths[type];
+
+    if (path == null || path.isEmpty) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PdfPreviewPage(filePath: path, title: title),
+      ),
+    );
   }
 
   @override
@@ -62,39 +75,62 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
               "Pratinjau Data",
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
+            // ================= DATA INSTANSI =================
             _sectionTitle("Informasi Instansi"),
             _item("Nama Domain", widget.data.namaDomain),
             _item("Nama Desa", widget.data.namaDesa),
-            _item("Kepala Desa", widget.data.namaKepalaDesa),
             _item("Telepon", widget.data.telepon),
+            _item("Faksimili", widget.data.faksimili),
             _item("Alamat", widget.data.alamat),
+
+            _item("Provinsi", widget.data.provinsi),
+            _item("Kabupaten", widget.data.kotaKabupaten),
+            _item("Kecamatan", widget.data.kecamatan),
+            _item("Desa/Kelurahan", widget.data.desaKelurahan),
+
             _item("Kode Pos", widget.data.kodePos),
 
             const SizedBox(height: 16),
 
+            // ================= DOKUMEN =================
             _sectionTitle("Dokumen Persyaratan"),
-            _fileItem("Surat Permohonan", widget.data.suratPermohonan),
-            _fileItem("Surat Kuasa", widget.data.suratKuasa),
-            _fileItem("Surat Penunjukan", widget.data.suratPenunjukan),
-            _fileItem("Kartu Pegawai", widget.data.kartuPegawai),
-            _fileItem("Dasar Hukum", widget.data.dasarHukum),
+
+            _fileItem(
+              "Surat Permohonan",
+              widget.data.suratPermohonan,
+              "surat_permohonan",
+            ),
+            _fileItem(
+              "Perda Pembentukan Desa",
+              widget.data.perdaPembentukanDesa,
+              "perda_pembentukan_desa",
+            ),
+            _fileItem("Surat Kuasa", widget.data.suratKuasa, "surat_kuasa"),
+            _fileItem(
+              "Surat Penunjukan Pejabat",
+              widget.data.suratPenunjukan,
+              "surat_penunjukan_pejabat",
+            ),
+            _fileItem(
+              "KTP ASN Pejabat",
+              widget.data.ktpAsnPejabat,
+              "ktp_asn_pejabat",
+            ),
           ],
         ),
       ),
     );
   }
 
+  // ================= UI =================
   Widget _sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 13,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
       ),
     );
   }
@@ -109,18 +145,12 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
       ),
       child: Row(
         children: [
-          Expanded(
-            flex: 4,
-            child: Text(label, style: const TextStyle(fontSize: 12)),
-          ),
+          Expanded(flex: 4, child: Text(label)),
           Expanded(
             flex: 6,
             child: Text(
               value.isEmpty ? "-" : value,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -128,7 +158,7 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
     );
   }
 
-  Widget _fileItem(String title, String fileName) {
+  Widget _fileItem(String title, String fileName, String type) {
     final isUploaded = fileName.isNotEmpty;
 
     return Card(
@@ -143,6 +173,12 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
           isUploaded ? fileName : "Belum diupload",
           style: const TextStyle(fontSize: 12),
         ),
+        trailing: isUploaded
+            ? IconButton(
+                icon: const Icon(Icons.visibility, color: Colors.blue),
+                onPressed: () => _openFile(type, title),
+              )
+            : null,
       ),
     );
   }
