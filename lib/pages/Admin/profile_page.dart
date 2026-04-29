@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/admin_bottom_nav.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -6,7 +7,14 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Profil")),
+      appBar: AppBar(
+        title: const Text("Profil"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 3),
+
       body: const Center(child: Text("Halaman Profil (Coming Soon)")),
     );
   }

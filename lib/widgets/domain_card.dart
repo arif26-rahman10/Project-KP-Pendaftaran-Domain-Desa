@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/pengajuan_model.dart';
-import '../pages/domain/admin_detail_domain.dart';
+import '../pages/admin/domain/admin_detail_domain.dart';
 
 class DomainCard extends StatelessWidget {
   final Pengajuan item;
@@ -11,9 +11,9 @@ class DomainCard extends StatelessWidget {
   Color getStatusColor(String status) {
     switch (status) {
       case 'ditinjau':
-        return Colors.blue;
-      case 'diproses':
         return Colors.orange;
+      case 'diproses':
+        return Colors.blue;
       case 'perlu_perbaikan':
         return Colors.red;
       case 'aktif':
@@ -33,6 +33,8 @@ class DomainCard extends StatelessWidget {
         return "Perlu Perbaikan";
       case 'aktif':
         return "Domain Aktif";
+      case 'menunggu_aktivasi':
+        return "Menunggu Aktifasi";
       default:
         return status;
     }
@@ -109,14 +111,18 @@ class DomainCard extends StatelessWidget {
               // BUTTON DETAIL
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: const Color.fromARGB(255, 134, 5, 5),
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,
                   ),
                 ),
                 onPressed: onTap,
-                child: const Text("Detail", style: TextStyle(fontSize: 12)),
+                child: const Text(
+                  "Lihat Detail",
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
             ],
           ),

@@ -1,6 +1,5 @@
 class ApiConfig {
-  static const String baseUrl =
-      "https://8a3c-103-166-161-146.ngrok-free.app/api";
+  static const String baseUrl = "https://pendaftaran.bengkaliskab.go.id/api";
 
   static const login = "/login";
   static const register = "/register";

@@ -9,7 +9,6 @@ class AdminHomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
 
-      // 🔥 GANTI NAVBAR
       bottomNavigationBar: const AdminBottomNav(currentIndex: 0),
 
       body: SafeArea(

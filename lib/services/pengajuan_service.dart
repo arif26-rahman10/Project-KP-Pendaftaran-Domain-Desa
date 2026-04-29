@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'api_config.dart';
 import '../models/pengajuan_model.dart';
+import 'api_config.dart';
 
 class PengajuanService {
   late Dio dio;
@@ -32,7 +32,7 @@ class PengajuanService {
     }
   }
 
-  // ================= SUBMIT (USER) =================
+  // ================= SUBMIT =================
   Future<bool> submitPengajuan({
     required String domain,
     required Map<String, String> data,
@@ -41,20 +41,12 @@ class PengajuanService {
     try {
       FormData formData = FormData();
 
-      // ================= TEXT =================
       formData.fields.add(MapEntry('nama_domain', domain));
 
       data.forEach((key, value) {
         formData.fields.add(MapEntry(key, value));
       });
 
-      // DEBUG (WAJIB BIAR KELIHATAN)
-      print("=== DATA DIKIRIM ===");
-      for (var f in formData.fields) {
-        print("${f.key} = ${f.value}");
-      }
-
-      // ================= FILE =================
       Future<void> addFile(String key, String? path) async {
         if (path != null && path.isNotEmpty) {
           formData.files.add(
@@ -66,95 +58,85 @@ class PengajuanService {
               ),
             ),
           );
-          print("FILE OK: $key");
-        } else {
-          print("FILE KOSONG: $key");
         }
       }
 
       await addFile('surat_permohonan', files['surat_permohonan']);
       await addFile('surat_kuasa', files['surat_kuasa']);
-      await addFile('surat_penunjukan', files['surat_penunjukan']);
-      await addFile('kartu_pegawai', files['kartu_pegawai']);
-      await addFile('dasar_hukum', files['dasar_hukum']);
+      await addFile(
+        'surat_penunjukan_pejabat',
+        files['surat_penunjukan_pejabat'],
+      );
+      await addFile('ktp_asn_pejabat', files['ktp_asn_pejabat']);
+      await addFile('perda_pembentukan_desa', files['perda_pembentukan_desa']);
 
-      // ================= REQUEST =================
       final res = await dio.post(ApiConfig.submitPengajuan, data: formData);
 
-      print("RESPONSE: ${res.data}");
-
       return res.data['success'] == true;
-    } on DioException catch (e) {
-      print("DIO ERROR: ${e.response?.data}");
-      return false;
     } catch (e) {
-      print("ERROR: $e");
+      print("ERROR submit: $e");
       return false;
     }
   }
 
-  // ================= GET LIST (ADMIN) =================
+  // ================= GET LIST =================
   Future<List<Pengajuan>> getPengajuanAdmin() async {
     try {
       final res = await dio.get(ApiConfig.getPengajuan);
-
-      // DEBUG
-      print("RESPONSE API: ${res.data}");
 
       final List list = res.data['data'];
 
       return list.map((e) => Pengajuan.fromJson(e)).toList();
     } catch (e) {
-      print("ERROR SERVICE: $e");
+      print("ERROR LIST: $e");
       return [];
     }
   }
 
-  // ================= FILTER STATUS =================
-  Future<List<dynamic>> getByStatus(String status) async {
+  // ================= GET DETAIL (FIX UTAMA) =================
+  Future<Pengajuan> getDetail(int id) async {
     try {
-      final res = await dio.get(
-        ApiConfig.getPengajuan,
-        queryParameters: {'status': status},
-      );
+      final res = await dio.get("/admin/pengajuan/$id");
 
-      return res.data['data'] ?? [];
+      if (res.data['success']) {
+        return Pengajuan.fromJson(res.data['data']);
+      } else {
+        throw Exception("Data tidak ditemukan");
+      }
     } catch (e) {
-      print("Error filter: $e");
-      return [];
+      print("ERROR DETAIL: $e");
+      throw Exception("Gagal ambil detail");
     }
   }
 
-  // ================= AKTIVASI (ADMIN) =================
-  Future<bool> aktivasiPengajuan(int id) async {
-    try {
-      final res = await dio.post("${ApiConfig.aktivasi}/$id");
-
-      return res.data['success'] == true;
-    } on DioException catch (e) {
-      print("Error aktivasi: ${e.response?.data}");
-      return false;
-    } catch (e) {
-      print("Error aktivasi: $e");
-      return false;
-    }
-  }
-
-  // ================= VERIFIKASI (ADMIN) =================
-  Future<bool> verifikasiPengajuan({
+  // ================= VERIFIKASI =================
+  Future<void> verifikasiPengajuan({
     required int id,
     required String status,
     required String catatan,
   }) async {
     try {
       final res = await dio.post(
-        "/admin/verifikasi/$id",
+        "/pengajuan/verifikasi/$id",
         data: {"status": status, "catatan": catatan},
       );
 
+      if (res.data['success'] != true) {
+        throw Exception(res.data['message']);
+      }
+    } catch (e) {
+      print("ERROR VERIFIKASI: $e");
+      throw Exception("Gagal verifikasi");
+    }
+  }
+
+  // ================= AKTIVASI =================
+  Future<bool> aktivasiPengajuan(int id) async {
+    try {
+      final res = await dio.post("${ApiConfig.aktivasi}/$id");
       return res.data['success'] == true;
     } catch (e) {
-      print("Error verifikasi: $e");
+      print("Error aktivasi: $e");
       return false;
     }
   }
