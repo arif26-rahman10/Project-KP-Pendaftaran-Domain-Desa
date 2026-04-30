@@ -9,7 +9,6 @@ class ApiService {
     return {"Accept": "application/json", "Content-Type": "application/json"};
   }
 
-  // ================= LOGIN =================
   static Future<Map<String, dynamic>> login({
     required String username,
     required String password,
@@ -45,7 +44,6 @@ class ApiService {
     }
   }
 
-  // ================= REGISTER =================
   static Future<void> register({
     required String name,
     required String username,
@@ -80,7 +78,45 @@ class ApiService {
     }
   }
 
-  // ================= GET INSTANSI =================
+  static Future<Map<String, dynamic>> updateProfile({
+    required int idUser,
+    required String name,
+    required String email,
+    required String noHp,
+    String oldPassword = '',
+    String newPassword = '',
+    String confirmPassword = '',
+  }) async {
+    final response = await http.post(
+      Uri.parse("${ApiConfig.baseUrl}/profile/update"),
+      headers: _headers(),
+      body: jsonEncode({
+        "id_user": idUser,
+        "name": name,
+        "email": email,
+        "no_hp": noHp,
+        "old_password": oldPassword,
+        "password": newPassword,
+        "password_confirmation": confirmPassword,
+      }),
+    );
+
+    print("UPDATE PROFILE STATUS: ${response.statusCode}");
+    print("UPDATE PROFILE BODY: ${response.body}");
+
+    if (response.body.isEmpty) {
+      throw Exception("Response update profile kosong");
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw Exception(data['message'] ?? "Gagal memperbarui profil");
+    }
+
+    return Map<String, dynamic>.from(data);
+  }
+
   static Future<Map<String, dynamic>> getInstansi({required int idUser}) async {
     final response = await http.post(
       Uri.parse("${ApiConfig.baseUrl}/instansi"),
@@ -104,7 +140,6 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
-  // ================= UPDATE INSTANSI =================
   static Future<Map<String, dynamic>> updateInstansi({
     required int idUser,
     required String namaDesa,
@@ -142,7 +177,6 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
-  // ================= SUBMIT PENDAFTARAN =================
   static Future<Map<String, dynamic>> submitPendaftaran({
     required RegistrationData data,
   }) async {

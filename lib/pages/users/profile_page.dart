@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../main.dart';
 import '../../services/local_auth_service.dart';
+import '../../services/api_service.dart';
 import '../domain/domain_page.dart';
 import '../home_page.dart';
 import 'informasi_instansi_page.dart';
@@ -101,21 +102,12 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
-    String finalPassword = savedPassword;
-
     if (newPassword.isNotEmpty ||
         confirmPassword.isNotEmpty ||
         oldPassword.isNotEmpty) {
-      if (oldPassword != savedPassword) {
+      if (oldPassword.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password lama tidak sesuai')),
-        );
-        return;
-      }
-
-      if (newPassword != confirmPassword) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Konfirmasi password tidak sama')),
+          const SnackBar(content: Text('Password lama wajib diisi')),
         );
         return;
       }
@@ -127,29 +119,63 @@ class _ProfilePageState extends State<ProfilePage> {
         return;
       }
 
-      finalPassword = newPassword;
+      if (newPassword != confirmPassword) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Konfirmasi password tidak sama')),
+        );
+        return;
+      }
     }
 
-    await LocalAuthService.saveRegisteredUser(
-      idUser: idUser,
-      fullName: fullName,
-      username: widget.username,
-      email: email,
-      phone: phone,
-      password: finalPassword,
-    );
+    try {
+      final response = await ApiService.updateProfile(
+        idUser: idUser,
+        name: fullName,
+        email: email,
+        noHp: phone,
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
 
-    savedPassword = finalPassword;
+      final user = response['user'];
 
-    oldPasswordController.clear();
-    newPasswordController.clear();
-    confirmPasswordController.clear();
+      final updatedName = user['name']?.toString() ?? fullName;
+      final updatedEmail = user['email']?.toString() ?? email;
+      final updatedPhone = user['no_hp']?.toString() ?? phone;
+      final updatedPassword = newPassword.isNotEmpty
+          ? newPassword
+          : savedPassword;
 
-    if (!mounted) return;
+      await LocalAuthService.saveRegisteredUser(
+        idUser: idUser,
+        fullName: updatedName,
+        username: widget.username,
+        email: updatedEmail,
+        phone: updatedPhone,
+        password: updatedPassword,
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Perubahan profil berhasil disimpan')),
-    );
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profil berhasil diperbarui')),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              ProfilePage(fullName: updatedName, username: widget.username),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+      );
+    }
   }
 
   Future<void> _openInformasiInstansi() async {
