@@ -9,6 +9,7 @@ class ApiService {
     return {"Accept": "application/json", "Content-Type": "application/json"};
   }
 
+  // ================= LOGIN =================
   static Future<Map<String, dynamic>> login({
     required String username,
     required String password,
@@ -33,23 +34,18 @@ class ApiService {
         throw Exception(data['message'] ?? "Login gagal");
       }
 
-      // kalau gagal login (401 / 422 dll)
-      if (response.statusCode != 200) {
-        throw Exception(data['message'] ?? "Login gagal");
-      }
-
-      // pastikan ada role
       if (!data.containsKey('role')) {
         throw Exception("Role tidak ditemukan di response API");
       }
 
-      return data;
+      return Map<String, dynamic>.from(data);
     } catch (e) {
       print("LOGIN ERROR: $e");
       rethrow;
     }
   }
 
+  // ================= REGISTER =================
   static Future<void> register({
     required String name,
     required String username,
@@ -84,6 +80,69 @@ class ApiService {
     }
   }
 
+  // ================= GET INSTANSI =================
+  static Future<Map<String, dynamic>> getInstansi({required int idUser}) async {
+    final response = await http.post(
+      Uri.parse("${ApiConfig.baseUrl}/instansi"),
+      headers: _headers(),
+      body: jsonEncode({"id_user": idUser}),
+    );
+
+    print("INSTANSI STATUS: ${response.statusCode}");
+    print("INSTANSI BODY: ${response.body}");
+
+    if (response.body.isEmpty) {
+      throw Exception("Response instansi kosong");
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw Exception(data['message'] ?? "Gagal mengambil data instansi");
+    }
+
+    return Map<String, dynamic>.from(data);
+  }
+
+  // ================= UPDATE INSTANSI =================
+  static Future<Map<String, dynamic>> updateInstansi({
+    required int idUser,
+    required String namaDesa,
+    required String namaKepalaDesa,
+    required String nipKepalaDesa,
+    required String noHpKepalaDesa,
+    required String alamat,
+  }) async {
+    final response = await http.post(
+      Uri.parse("${ApiConfig.baseUrl}/instansi/update"),
+      headers: _headers(),
+      body: jsonEncode({
+        "id_user": idUser,
+        "nama_desa": namaDesa,
+        "nama_kepala_desa": namaKepalaDesa,
+        "nip_kepala_desa": nipKepalaDesa,
+        "no_hp_kepala_desa": noHpKepalaDesa,
+        "alamat": alamat,
+      }),
+    );
+
+    print("UPDATE INSTANSI STATUS: ${response.statusCode}");
+    print("UPDATE INSTANSI BODY: ${response.body}");
+
+    if (response.body.isEmpty) {
+      throw Exception("Response update instansi kosong");
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw Exception(data['message'] ?? "Gagal menyimpan data instansi");
+    }
+
+    return Map<String, dynamic>.from(data);
+  }
+
+  // ================= SUBMIT PENDAFTARAN =================
   static Future<Map<String, dynamic>> submitPendaftaran({
     required RegistrationData data,
   }) async {
@@ -125,21 +184,25 @@ class ApiService {
         data.filePaths['surat_permohonan'],
         data.suratPermohonan,
       );
+
       await addFile(
         "perda_pembentukan_desa",
         data.filePaths['perda_pembentukan_desa'],
         data.perdaPembentukanDesa,
       );
+
       await addFile(
         "surat_kuasa",
         data.filePaths['surat_kuasa'],
         data.suratKuasa,
       );
+
       await addFile(
         "surat_penunjukan_pejabat",
         data.filePaths['surat_penunjukan_pejabat'],
         data.suratPenunjukan,
       );
+
       await addFile(
         "ktp_asn_pejabat",
         data.filePaths['ktp_asn_pejabat'],
@@ -155,7 +218,11 @@ class ApiService {
       print("STATUS: ${response.statusCode}");
       print("BODY: ${response.data}");
 
-      return response.data;
+      if (response.data is Map<String, dynamic>) {
+        return Map<String, dynamic>.from(response.data);
+      }
+
+      return {"success": true, "message": "Pengajuan berhasil dikirim"};
     } on DioException catch (e) {
       print("ERROR: ${e.response?.data}");
       throw Exception(e.response?.data?['message'] ?? "Gagal mengirim data");

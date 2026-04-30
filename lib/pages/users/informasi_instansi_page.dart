@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../main.dart';
 import '../../services/local_auth_service.dart';
+import '../../services/api_service.dart';
 
 class InformasiInstansiPage extends StatefulWidget {
   const InformasiInstansiPage({super.key});
@@ -20,6 +21,7 @@ class _InformasiInstansiPageState extends State<InformasiInstansiPage> {
       TextEditingController();
 
   bool isLoading = true;
+  int? idUser;
 
   @override
   void initState() {
@@ -28,19 +30,41 @@ class _InformasiInstansiPageState extends State<InformasiInstansiPage> {
   }
 
   Future<void> _loadInstitutionData() async {
-    final data = await LocalAuthService.getInstitutionInfo();
+    try {
+      final user = await LocalAuthService.getRegisteredUser();
+      idUser = int.tryParse(user['id_user'].toString());
 
-    namaDesaController.text = data['namaDesa'] ?? '';
-    namaKepalaDesaController.text = data['namaKepalaDesa'] ?? '';
-    nipKepalaDesaController.text = data['nipKepalaDesa'] ?? '';
-    noHpKepalaDesaController.text = data['noHpKepalaDesa'] ?? '';
-    alamatKantorDesaController.text = data['alamatKantorDesa'] ?? '';
+      if (idUser == null) {
+        if (!mounted) return;
+        setState(() => isLoading = false);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ID user tidak ditemukan. Silakan login ulang.'),
+          ),
+        );
+        return;
+      }
+
+      final response = await ApiService.getInstansi(idUser: idUser!);
+      final desa = response['desa'];
+
+      if (desa != null) {
+        namaDesaController.text = desa['nama_desa']?.toString() ?? '';
+        namaKepalaDesaController.text =
+            desa['nama_kepala_desa']?.toString() ?? '';
+        nipKepalaDesaController.text =
+            desa['nip_kepala_desa']?.toString() ?? '';
+        noHpKepalaDesaController.text =
+            desa['no_hp_kepala_desa']?.toString() ?? '';
+        alamatKantorDesaController.text = desa['alamat']?.toString() ?? '';
+      }
+    } catch (e) {
+      debugPrint("LOAD INSTANSI ERROR: $e");
+    }
 
     if (!mounted) return;
-
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => isLoading = false);
   }
 
   @override
@@ -60,6 +84,15 @@ class _InformasiInstansiPageState extends State<InformasiInstansiPage> {
     final noHpKepalaDesa = noHpKepalaDesaController.text.trim();
     final alamatKantorDesa = alamatKantorDesaController.text.trim();
 
+    if (idUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ID user tidak ditemukan. Silakan login ulang.'),
+        ),
+      );
+      return;
+    }
+
     if (namaDesa.isEmpty ||
         namaKepalaDesa.isEmpty ||
         nipKepalaDesa.isEmpty ||
@@ -71,19 +104,28 @@ class _InformasiInstansiPageState extends State<InformasiInstansiPage> {
       return;
     }
 
-    await LocalAuthService.saveInstitutionInfo(
-      namaDesa: namaDesa,
-      namaKepalaDesa: namaKepalaDesa,
-      nipKepalaDesa: nipKepalaDesa,
-      noHpKepalaDesa: noHpKepalaDesa,
-      alamatKantorDesa: alamatKantorDesa,
-    );
+    try {
+      await ApiService.updateInstansi(
+        idUser: idUser!,
+        namaDesa: namaDesa,
+        namaKepalaDesa: namaKepalaDesa,
+        nipKepalaDesa: nipKepalaDesa,
+        noHpKepalaDesa: noHpKepalaDesa,
+        alamat: alamatKantorDesa,
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Informasi instansi berhasil disimpan')),
-    );
+      Navigator.pop(context, true);
+    } catch (e) {
+      debugPrint("UPDATE INSTANSI ERROR: $e");
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal menyimpan data: $e')));
+    }
   }
 
   Widget _instansiField({
@@ -149,9 +191,7 @@ class _InformasiInstansiPageState extends State<InformasiInstansiPage> {
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
                 const Text(

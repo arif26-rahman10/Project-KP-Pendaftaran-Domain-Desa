@@ -1,6 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = "https://pendaftaran.bengkaliskab.go.id/api";
-
+  static const String baseUrl = "https://trade-lusty-doorbell.ngrok-free.dev/api";
   static const login = "/login";
   static const register = "/register";
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../main.dart';
 import '../../services/local_auth_service.dart';
+import '../../services/api_service.dart';
 import '../domain/domain_page.dart';
 import 'faktur_page.dart';
 import '../home_page.dart';
@@ -55,17 +56,49 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
   }
 
   Future<void> _loadData() async {
-    final instansi = await LocalAuthService.getInstitutionInfo();
-    final user = await LocalAuthService.getRegisteredUser();
+    try {
+      final user = await LocalAuthService.getRegisteredUser();
 
-    if (!mounted) return;
+      final idUser = int.tryParse(user['id_user'].toString()) ?? 0;
+      final email = user['email']?.toString() ?? 'user@gmail.com';
 
-    setState(() {
-      namaInstansi = instansi['namaDesa'] ?? 'Kelapapati';
-      namaKepalaDesa = instansi['namaKepalaDesa'] ?? 'Kelapapati';
-      alamatKantor = instansi['alamatKantorDesa'] ?? 'Jl. Kelapapati Tengah';
-      emailUser = user['email'] ?? 'user@gmail.com';
-    });
+      if (idUser == 0) {
+        if (!mounted) return;
+
+        setState(() {
+          namaInstansi = 'Kelapapati';
+          namaKepalaDesa = 'Kelapapati';
+          alamatKantor = 'Jl. Kelapapati Tengah';
+          emailUser = email;
+        });
+
+        return;
+      }
+
+      final response = await ApiService.getInstansi(idUser: idUser);
+      final desa = response['desa'];
+
+      if (!mounted) return;
+
+      setState(() {
+        namaInstansi = desa?['nama_desa']?.toString() ?? 'Kelapapati';
+        namaKepalaDesa =
+            desa?['nama_kepala_desa']?.toString() ?? 'Kelapapati';
+        alamatKantor = desa?['alamat']?.toString() ?? 'Jl. Kelapapati Tengah';
+        emailUser = email;
+      });
+    } catch (e) {
+      print("LOAD FAKTUR DATA ERROR: $e");
+
+      if (!mounted) return;
+
+      setState(() {
+        namaInstansi = 'Kelapapati';
+        namaKepalaDesa = 'Kelapapati';
+        alamatKantor = 'Jl. Kelapapati Tengah';
+        emailUser = 'user@gmail.com';
+      });
+    }
   }
 
   Future<void> _pickFile() async {
@@ -262,6 +295,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 18),
+
                   const Text(
                     'Instansi',
                     style: TextStyle(
@@ -293,10 +327,11 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    'Kelapapati, Bengkalis, Bengkalis, Riau',
+                    '$namaInstansi, Bengkalis, Bengkalis, Riau',
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 18),
+
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -312,6 +347,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                     ),
                   ),
                   const SizedBox(height: 18),
+
                   Text(
                     'Mohon Mencantumkan Nomor Invoice pada saat melakukan pembayaran.',
                     style: TextStyle(
@@ -354,6 +390,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 18),
+
                   RichText(
                     text: const TextSpan(
                       text: 'Bukti Pembayaran ',
@@ -415,6 +452,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                     ),
                   ),
                   const SizedBox(height: 18),
+
                   SizedBox(
                     width: double.infinity,
                     height: 46,

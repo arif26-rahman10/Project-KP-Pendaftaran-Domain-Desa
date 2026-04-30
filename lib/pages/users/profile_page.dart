@@ -25,6 +25,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int currentIndex = 3;
+  int idUser = 0;
 
   late TextEditingController nameController;
   late TextEditingController emailController;
@@ -54,10 +55,11 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!mounted) return;
 
     setState(() {
-      nameController.text = user['fullName'] ?? widget.fullName;
-      emailController.text = user['email'] ?? '';
-      phoneController.text = user['phone'] ?? '';
-      savedPassword = user['password'] ?? '';
+      idUser = int.tryParse(user['id_user'].toString()) ?? 0;
+      nameController.text = user['fullName']?.toString() ?? widget.fullName;
+      emailController.text = user['email']?.toString() ?? '';
+      phoneController.text = user['phone']?.toString() ?? '';
+      savedPassword = user['password']?.toString() ?? '';
     });
   }
 
@@ -129,6 +131,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     await LocalAuthService.saveRegisteredUser(
+      idUser: idUser,
       fullName: fullName,
       username: widget.username,
       email: email,
@@ -147,6 +150,21 @@ class _ProfilePageState extends State<ProfilePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Perubahan profil berhasil disimpan')),
     );
+  }
+
+  Future<void> _openInformasiInstansi() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const InformasiInstansiPage()),
+    );
+
+    if (!mounted) return;
+
+    if (result == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informasi instansi berhasil disimpan')),
+      );
+    }
   }
 
   void _onTapNav(int index) {
@@ -371,14 +389,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 10),
                   InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const InformasiInstansiPage(),
-                        ),
-                      );
-                    },
+                    onTap: _openInformasiInstansi,
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
                       width: double.infinity,

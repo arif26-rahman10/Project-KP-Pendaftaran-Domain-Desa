@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../main.dart';
 import '../../services/api_service.dart';
+import '../../services/local_auth_service.dart';
 import '../../widgets/custom_field.dart';
 import '../../widgets/support_logo.dart';
 import '../../widgets/top_pattern.dart';
@@ -21,7 +22,6 @@ class _LoginPageState extends State<LoginPage> {
 
   bool rememberMe = false;
   bool _isLoading = false;
-
   bool _obscurePassword = true;
 
   Future<void> _login() async {
@@ -48,13 +48,31 @@ class _LoginPageState extends State<LoginPage> {
       final user = result['user'];
 
       if (result['success'] == true && user != null && user is Map) {
+        final idUser = int.tryParse(user['id_user'].toString()) ?? 0;
         final name = user['name']?.toString() ?? 'Pengguna';
         final uname = user['username']?.toString() ?? '-';
+        final email = user['email']?.toString() ?? '';
+        final phone = user['no_hp']?.toString() ?? '';
         final role = result['role']?.toString() ?? '';
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Login berhasil')));
+        await LocalAuthService.saveRegisteredUser(
+          idUser: idUser,
+          fullName: name,
+          username: uname,
+          email: email,
+          phone: phone,
+          password: password,
+        );
+
+        await LocalAuthService.setLoginStatus(
+          rememberMe: rememberMe,
+        );
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login berhasil')),
+        );
 
         if (role == 'admin') {
           Navigator.pushReplacement(
@@ -65,27 +83,45 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => HomePage(fullName: name, username: uname),
+              builder: (_) => HomePage(
+                fullName: name,
+                username: uname,
+              ),
             ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Role tidak dikenali')),
           );
         }
       } else {
         final message = result['message'] ?? 'Login gagal';
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
       }
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+        SnackBar(
+          content: Text(
+            e.toString().replaceAll('Exception: ', ''),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -124,7 +160,10 @@ class _LoginPageState extends State<LoginPage> {
 
                 const Text(
                   'Selamat Datang di Nama Aplikasi',
-                  style: TextStyle(color: kPrimary, fontSize: 14),
+                  style: TextStyle(
+                    color: kPrimary,
+                    fontSize: 14,
+                  ),
                 ),
 
                 const SizedBox(height: 28),
@@ -155,7 +194,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
 
-                // 🔹 Remember me
                 Row(
                   children: [
                     SizedBox(
@@ -185,7 +223,6 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 18),
 
-                // 🔹 Button Login
                 SizedBox(
                   width: double.infinity,
                   height: 58,
