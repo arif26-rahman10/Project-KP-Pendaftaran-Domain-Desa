@@ -1,12 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import '../../main.dart';
+import '../../services/api_config.dart';
+import '../../services/api_helper.dart';
 import '../../services/local_auth_service.dart';
-import '../domain/domain_page.dart';
-import '../home_page.dart';
+import '../notifikasi/notifikasi_page.dart';
 import 'informasi_instansi_page.dart';
 import 'login_page.dart';
-import '../faktur/faktur_page.dart';
-import '../notifikasi/notifikasi_page.dart';
 import '../../widgets/app_bottom_nav.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -24,17 +26,15 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  int currentIndex = 3;
   int idUser = 0;
 
   late TextEditingController nameController;
   late TextEditingController emailController;
   late TextEditingController phoneController;
 
-  final TextEditingController oldPasswordController = TextEditingController();
-  final TextEditingController newPasswordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final oldPasswordController = TextEditingController();
+  final newPasswordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
   String savedPassword = '';
 
@@ -46,38 +46,25 @@ class _ProfilePageState extends State<ProfilePage> {
     emailController = TextEditingController();
     phoneController = TextEditingController();
 
-    _loadProfileData();
+    _loadProfile();
   }
 
-  Future<void> _loadProfileData() async {
+  Future<void> _loadProfile() async {
     final user = await LocalAuthService.getRegisteredUser();
-
-    if (!mounted) return;
 
     setState(() {
       idUser = int.tryParse(user['id_user'].toString()) ?? 0;
-      nameController.text = user['fullName']?.toString() ?? widget.fullName;
-      emailController.text = user['email']?.toString() ?? '';
-      phoneController.text = user['phone']?.toString() ?? '';
-      savedPassword = user['password']?.toString() ?? '';
+      nameController.text = user['fullName'] ?? '';
+      emailController.text = user['email'] ?? '';
+      phoneController.text = user['phone'] ?? '';
+      savedPassword = user['password'] ?? '';
     });
-  }
 
-  @override
-  void dispose() {
-    nameController.dispose();
-    emailController.dispose();
-    phoneController.dispose();
-    oldPasswordController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
-    super.dispose();
+    print("ID USER LOAD: $idUser");
   }
 
   Future<void> _logout() async {
     await LocalAuthService.logout();
-
-    if (!mounted) return;
 
     Navigator.pushAndRemoveUntil(
       context,
@@ -94,154 +81,61 @@ class _ProfilePageState extends State<ProfilePage> {
     final newPassword = newPasswordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
 
-    if (fullName.isEmpty || email.isEmpty || phone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nama, email, dan nomor HP wajib diisi')),
+    print("ID USER: $idUser");
+
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.url(ApiConfig.updateProfile)),
+        headers: await ApiHelper.headers(isJson: false),
+        body: {
+          'id_user': idUser.toString(),
+          'name': fullName,
+          'email': email,
+          'no_hp': phone,
+          'old_password': oldPassword,
+          'password': newPassword,
+          'password_confirmation': confirmPassword,
+        },
       );
-      return;
-    }
 
-    String finalPassword = savedPassword;
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
 
-    if (newPassword.isNotEmpty ||
-        confirmPassword.isNotEmpty ||
-        oldPassword.isNotEmpty) {
-      if (oldPassword != savedPassword) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password lama tidak sesuai')),
+      final data = jsonDecode(response.body);
+
+      if (data['success'] == true) {
+        await LocalAuthService.saveRegisteredUser(
+          idUser: idUser,
+          fullName: fullName,
+          username: widget.username,
+          email: email,
+          phone: phone,
+          password: newPassword.isEmpty ? savedPassword : newPassword,
         );
-        return;
-      }
 
-      if (newPassword != confirmPassword) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Konfirmasi password tidak sama')),
+        await _loadProfile();
+
+        if (!mounted) return;
+
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Berhasil'),
+            content: Text(data['message']),
+          ),
         );
-        return;
-      }
-
-      if (newPassword.isEmpty) {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password baru tidak boleh kosong')),
+          SnackBar(content: Text(data['message'] ?? 'Gagal update')),
         );
-        return;
       }
+    } catch (e) {
+      print("ERROR: $e");
 
-      finalPassword = newPassword;
-    }
-
-    await LocalAuthService.saveRegisteredUser(
-      idUser: idUser,
-      fullName: fullName,
-      username: widget.username,
-      email: email,
-      phone: phone,
-      password: finalPassword,
-    );
-
-    savedPassword = finalPassword;
-
-    oldPasswordController.clear();
-    newPasswordController.clear();
-    confirmPasswordController.clear();
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Perubahan profil berhasil disimpan')),
-    );
-  }
-
-  Future<void> _openInformasiInstansi() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const InformasiInstansiPage()),
-    );
-
-    if (!mounted) return;
-
-    if (result == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Informasi instansi berhasil disimpan')),
-      );
-    }
-  }
-
-  void _onTapNav(int index) {
-    if (index == currentIndex) return;
-
-    if (index == 0) {
-      Navigator.pushReplacement(
+      ScaffoldMessenger.of(
         context,
-        MaterialPageRoute(
-          builder: (_) => HomePage(
-            fullName: nameController.text.trim().isEmpty
-                ? widget.fullName
-                : nameController.text.trim(),
-            username: widget.username,
-          ),
-        ),
-      );
-    } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => DomainPage(
-            fullName: nameController.text.trim().isEmpty
-                ? widget.fullName
-                : nameController.text.trim(),
-            username: widget.username,
-          ),
-        ),
-      );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => FakturPage(
-            fullName: nameController.text.trim().isEmpty
-                ? widget.fullName
-                : nameController.text.trim(),
-            username: widget.username,
-          ),
-        ),
-      );
-    } else if (index == 3) {
-      setState(() {
-        currentIndex = 3;
-      });
+      ).showSnackBar(const SnackBar(content: Text('Gagal koneksi server')));
     }
-  }
-
-  Widget _profileField({
-    required IconData icon,
-    required TextEditingController controller,
-    required String hint,
-    bool obscure = false,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: TextField(
-        controller: controller,
-        obscureText: obscure,
-        style: const TextStyle(fontSize: 13),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
-          prefixIcon: Icon(icon, size: 18, color: Colors.grey.shade600),
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          isDense: true,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6),
-            borderSide: BorderSide(color: Colors.grey.shade500),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6),
-            borderSide: const BorderSide(color: kPrimary),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -252,16 +146,17 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: kBg,
       body: Column(
         children: [
+          // 🔴 HEADER
           Container(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(24, topSafe + 12, 24, 18),
+            padding: EdgeInsets.fromLTRB(24, topSafe + 16, 24, 20),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFFE01925), Color(0xFF7F1118)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
             ),
             child: Column(
               children: [
@@ -272,25 +167,20 @@ class _ProfilePageState extends State<ProfilePage> {
                         'Profil',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                     Container(
-                      width: 38,
-                      height: 38,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withOpacity(0.9),
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: const Icon(
-                          Icons.notifications_none,
-                          color: Colors.black87,
-                          size: 22,
-                        ),
+                        icon: const Icon(Icons.notifications_none),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -303,150 +193,106 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
+
+                // 👤 AVATAR
                 Container(
-                  width: 72,
-                  height: 72,
+                  width: 80,
+                  height: 80,
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.person,
-                    size: 44,
-                    color: Colors.black87,
-                  ),
+                  child: const Icon(Icons.person, size: 50),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
+
                 Text(
                   widget.username,
                   style: const TextStyle(
                     color: Colors.white,
+                    fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
+
+          // 📄 FORM
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  _profileField(
-                    icon: Icons.person_outline,
-                    controller: nameController,
-                    hint: 'Nama Lengkap',
-                  ),
-                  _profileField(
-                    icon: Icons.mail_outline,
-                    controller: emailController,
-                    hint: 'Email',
-                  ),
-                  _profileField(
-                    icon: Icons.phone_outlined,
-                    controller: phoneController,
-                    hint: 'No HP',
-                  ),
-                  _profileField(
-                    icon: Icons.lock_outline,
-                    controller: oldPasswordController,
-                    hint: 'Password Lama',
+                  _niceField(Icons.person, nameController, "Nama Lengkap"),
+                  _niceField(Icons.email, emailController, "Email"),
+                  _niceField(Icons.phone, phoneController, "No HP"),
+                  _niceField(
+                    Icons.lock,
+                    oldPasswordController,
+                    "Password Lama",
                     obscure: true,
                   ),
-                  _profileField(
-                    icon: Icons.lock_outline,
-                    controller: newPasswordController,
-                    hint: 'Password Baru',
+                  _niceField(
+                    Icons.lock,
+                    newPasswordController,
+                    "Password Baru",
                     obscure: true,
                   ),
-                  _profileField(
-                    icon: Icons.lock_outline,
-                    controller: confirmPasswordController,
-                    hint: 'Konfirmasi Password',
+                  _niceField(
+                    Icons.lock,
+                    confirmPasswordController,
+                    "Konfirmasi Password",
                     obscure: true,
                   ),
-                  const SizedBox(height: 8),
+
+                  const SizedBox(height: 10),
+
+                  // 🔴 BUTTON SIMPAN
                   SizedBox(
                     width: double.infinity,
-                    height: 42,
+                    height: 45,
                     child: ElevatedButton(
+                      onPressed: _saveProfile,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kPrimary,
                         foregroundColor: Colors.white,
-                        elevation: 2,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      onPressed: _saveProfile,
                       child: const Text(
-                        'Simpan Perubahan',
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                        "Simpan Perubahan",
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  InkWell(
-                    onTap: _openInformasiInstansi,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: Colors.grey.shade700,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Informasi Instansi',
-                            style: TextStyle(
-                              color: Colors.grey.shade700,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+
+                  const SizedBox(height: 12),
+
+                  // 📄 INFORMASI INSTANSI
+                  _menuTile(
+                    icon: Icons.info_outline,
+                    text: "Informasi Instansi",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const InformasiInstansiPage(),
+                        ),
+                      );
+                    },
                   ),
+
                   const SizedBox(height: 10),
-                  InkWell(
+
+                  // 🚪 LOGOUT
+                  _menuTile(
+                    icon: Icons.logout,
+                    text: "Keluar",
+                    color: Colors.red,
                     onTap: _logout,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.logout, color: Colors.red, size: 18),
-                          SizedBox(width: 10),
-                          Text(
-                            'Keluar',
-                            style: TextStyle(color: Colors.red, fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -454,12 +300,64 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
+
       bottomNavigationBar: AppBottomNav(
         currentIndex: 3,
-        fullName: nameController.text.trim().isEmpty
-            ? widget.fullName
-            : nameController.text.trim(),
+        fullName: nameController.text,
         username: widget.username,
+      ),
+    );
+  }
+
+  Widget _niceField(
+    IconData icon,
+    TextEditingController controller,
+    String hint, {
+    bool obscure = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: controller,
+        obscureText: obscure,
+        style: const TextStyle(fontSize: 14),
+        decoration: InputDecoration(
+          hintText: hint,
+          prefixIcon: Icon(icon, size: 20),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
+    );
+  }
+
+  Widget _menuTile({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color ?? Colors.black87),
+            const SizedBox(width: 10),
+            Text(
+              text,
+              style: TextStyle(color: color ?? Colors.black87, fontSize: 14),
+            ),
+          ],
+        ),
       ),
     );
   }

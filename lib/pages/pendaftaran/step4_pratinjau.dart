@@ -3,6 +3,7 @@ import '../../services/api_service.dart';
 import '../../services/registration_data.dart';
 import '../../widgets/step_form_layout.dart';
 import 'pdf_preview_page.dart';
+import '../../services/pengajuan_service.dart';
 
 class Step4Pratinjau extends StatefulWidget {
   final RegistrationData data;
@@ -20,16 +21,29 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await ApiService.submitPendaftaran(data: widget.data);
+      final service = PengajuanService();
 
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? "Berhasil dikirim"),
-          backgroundColor: Colors.green,
-        ),
+      final success = await service.submitPengajuan(
+        domain: widget.data.namaDomain,
+        data: {
+          "nama_desa": widget.data.namaDesa,
+          "telepon": widget.data.telepon,
+          "faksimili": widget.data.faksimili,
+          "alamat": widget.data.alamat,
+          "kode_pos": widget.data.kodePos,
+          "provinsi": widget.data.provinsi,
+          "kota_kabupaten": widget.data.kotaKabupaten,
+          "kecamatan": widget.data.kecamatan,
+          "desa_kelurahan": widget.data.desaKelurahan,
+        },
+        files: widget.data.filePaths,
       );
+
+      if (success) {
+        print("Berhasil kirim");
+      } else {
+        print("Gagal kirim");
+      }
 
       Navigator.popUntil(context, (route) => route.isFirst);
     } catch (e) {

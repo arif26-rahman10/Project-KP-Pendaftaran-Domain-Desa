@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../main.dart';
 import '../../services/api_service.dart';
 import '../../services/local_auth_service.dart';
 import '../../widgets/custom_field.dart';
 import '../../widgets/support_logo.dart';
-import '../../widgets/top_pattern.dart';
 import '../home_page.dart';
 import '../admin/home_page.dart';
 
@@ -20,22 +20,25 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  bool rememberMe = false;
   bool _isLoading = false;
   bool _obscurePassword = true;
+  String? _errorMessage;
 
   Future<void> _login() async {
     final username = usernameController.text.trim();
     final password = passwordController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Username dan password wajib diisi')),
-      );
+      setState(() {
+        _errorMessage = 'Username dan password wajib diisi';
+      });
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
       final result = await ApiService.login(
@@ -64,52 +67,36 @@ class _LoginPageState extends State<LoginPage> {
           password: password,
         );
 
-        await LocalAuthService.setLoginStatus(
-          rememberMe: rememberMe,
-        );
-
         if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login berhasil')),
-        );
 
         if (role == 'admin') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => AdminHomePage()),
+            MaterialPageRoute(builder: (_) => const AdminHomePage()),
           );
         } else if (role == 'desa') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => HomePage(
-                fullName: name,
-                username: uname,
-              ),
+              builder: (_) => HomePage(fullName: name, username: uname),
             ),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Role tidak dikenali')),
-          );
+          setState(() {
+            _errorMessage = 'Role tidak dikenali';
+          });
         }
       } else {
-        final message = result['message'] ?? 'Login gagal';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
+        setState(() {
+          _errorMessage = 'Username atau password salah';
+        });
       }
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString().replaceAll('Exception: ', ''),
-          ),
-        ),
-      );
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+      });
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -126,143 +113,170 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height - 40,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      resizeToAvoidBottomInset: false,
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Stack(
               children: [
-                const SizedBox(height: 12),
-                const TopPattern(),
-                const SizedBox(height: 28),
+                SvgPicture.asset(
+                  'assets/images/pattern_top.svg',
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.fitWidth,
+                ),
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withOpacity(0.0),
+                        Colors.white.withOpacity(0.85),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-                ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: width * 0.62),
-                  child: const Text(
-                    'Selamat\nDatang di\nNama Aplikasi',
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 40, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 80),
+
+                  const Text(
+                    'Selamat Datang di\nNama Aplikasi',
                     style: TextStyle(
-                      fontSize: 28,
-                      height: 1.25,
+                      fontSize: 34,
+                      height: 1.2,
                       fontWeight: FontWeight.w800,
                       color: kPrimary,
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-                const Text(
-                  'Selamat Datang di Nama Aplikasi',
-                  style: TextStyle(
-                    color: kPrimary,
-                    fontSize: 14,
+                  const Text(
+                    'Silakan login untuk melanjutkan',
+                    style: TextStyle(color: kPrimary, fontSize: 14),
                   ),
-                ),
 
-                const SizedBox(height: 28),
+                  const SizedBox(height: 28),
 
-                CustomField(
-                  icon: Icons.person_outline,
-                  hint: 'Masukkan Username',
-                  controller: usernameController,
-                ),
-
-                CustomField(
-                  icon: Icons.lock_outline,
-                  hint: 'Password',
-                  obscure: _obscurePassword,
-                  controller: passwordController,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                ),
-
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: Checkbox(
-                        value: rememberMe,
-                        onChanged: (value) {
-                          setState(() {
-                            rememberMe = value ?? false;
-                          });
-                        },
-                        activeColor: kPrimary,
-                        side: BorderSide(color: Colors.grey.shade500),
+                  /// ERROR MESSAGE
+                  if (_errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Remember me',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 18),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 58,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: kPrimary,
-                      foregroundColor: Colors.white,
-                      elevation: 4,
-                      shadowColor: Colors.black26,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    onPressed: _isLoading ? null : _login,
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text(
-                            'Masuk',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+
+                  /// USERNAME
+                  CustomField(
+                    icon: Icons.person_outline,
+                    hint: 'Masukkan Username',
+                    controller: usernameController,
+                    onChanged: (_) {
+                      if (_errorMessage != null) {
+                        setState(() => _errorMessage = null);
+                      }
+                    },
                   ),
-                ),
 
-                const SizedBox(height: 34),
+                  /// PASSWORD
+                  CustomField(
+                    icon: Icons.lock_outline,
+                    hint: 'Password',
+                    obscure: _obscurePassword,
+                    controller: passwordController,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
 
-                const Center(child: SupportLogo()),
-              ],
+                  const SizedBox(height: 20),
+
+                  /// BUTTON LOGIN
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPrimary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'Masuk',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+
+                  const Spacer(),
+                ],
+              ),
             ),
           ),
-        ),
+
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 20,
+            child: SafeArea(child: Center(child: SupportLogo())),
+          ),
+        ],
       ),
     );
   }

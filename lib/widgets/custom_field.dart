@@ -8,6 +8,7 @@ class CustomField extends StatefulWidget {
   final TextEditingController controller;
   final TextInputType keyboardType;
   final Widget? suffixIcon;
+  final Function(String)? onChanged;
 
   const CustomField({
     super.key,
@@ -17,6 +18,7 @@ class CustomField extends StatefulWidget {
     required this.controller,
     this.keyboardType = TextInputType.text,
     this.suffixIcon,
+    this.onChanged,
   });
 
   @override
@@ -40,17 +42,11 @@ class _CustomFieldState extends State<CustomField> {
         controller: widget.controller,
         obscureText: _obscureText,
         keyboardType: widget.keyboardType,
+        onChanged: widget.onChanged,
         decoration: InputDecoration(
           hintText: widget.hint,
-          hintStyle: TextStyle(
-            color: Colors.grey.shade400,
-            fontSize: 14,
-          ),
-          prefixIcon: Icon(
-            widget.icon,
-            color: Colors.grey.shade500,
-            size: 22,
-          ),
+          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+          prefixIcon: Icon(widget.icon, color: Colors.grey.shade500, size: 22),
           suffixIcon: widget.obscure
               ? IconButton(
                   icon: Icon(
@@ -71,21 +67,13 @@ class _CustomFieldState extends State<CustomField> {
           fillColor: Colors.grey.shade100,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
-            borderSide: const BorderSide(
-              color: kPrimary,
-              width: 1.5,
-            ),
+            borderSide: const BorderSide(color: kPrimary, width: 1.5),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
-            borderSide: const BorderSide(
-              color: kPrimary,
-              width: 1.8,
-            ),
+            borderSide: const BorderSide(color: kPrimary, width: 1.8),
           ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(18)),
         ),
       ),
     );

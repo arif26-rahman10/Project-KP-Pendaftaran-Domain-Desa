@@ -5,6 +5,7 @@ import '../notifikasi/notifikasi_page.dart';
 import 'daftar_domain_page.dart';
 import '../pendaftaran/step1_check_domain.dart';
 import '../../services/registration_data.dart';
+import '../verif_dok/verifikasi_dokumen_page.dart';
 
 class DomainPage extends StatefulWidget {
   final String fullName;
@@ -141,7 +142,7 @@ class _DomainPageState extends State<DomainPage> {
                   ),
                   const SizedBox(height: 30),
                   _domainCard(
-                    icon: Icons.fact_check_outlined,
+                    icon: Icons.update,
                     title: 'Perpanjangan Domain',
                     onTap: () {
                       Navigator.push(
@@ -155,19 +156,19 @@ class _DomainPageState extends State<DomainPage> {
 
                   const SizedBox(height: 30),
 
-                  // 3. MENU VERIFIKASI DOKUMEN
-                  // _domainCard(
-                  //   icon: Icons.verified_outlined,
-                  //   title: 'Verifikasi Dokumen',
-                  //   onTap: () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (_) => const VerifikasiDokumenPage(),
-                  //       ),
-                  //     );
-                  //   },
-                  // ),
+                  //MENU VERIFIKASI DOKUMEN
+                  _domainCard(
+                    icon: Icons.verified_outlined,
+                    title: 'Verifikasi Dokumen',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const VerifikasiDokumenPage(),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
