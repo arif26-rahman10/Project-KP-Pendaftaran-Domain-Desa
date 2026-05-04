@@ -1,3 +1,5 @@
+import '../services/api_config.dart';
+
 class Pengajuan {
   final int id;
   final int? idUser;
@@ -18,13 +20,12 @@ class Pengajuan {
   });
 
   factory Pengajuan.fromJson(Map<String, dynamic> json) {
-    const baseUrl = "https://pendaftaran.bengkaliskab.go.id/storage/";
-
     Map<String, String> dokumenMap = {};
 
     if (json['dokumen_persyaratan'] != null) {
       for (var doc in json['dokumen_persyaratan']) {
-        dokumenMap[doc['jenis_dokumen']] = baseUrl + doc['path_file'];
+        dokumenMap[doc['jenis_dokumen']] =
+            "${ApiConfig.storageUrl}/${doc['path_file']}";
       }
     }
 

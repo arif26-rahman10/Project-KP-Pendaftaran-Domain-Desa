@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../models/pengajuan_model.dart';
 import 'api_config.dart';
+import 'api_helper.dart';
 
 class PengajuanService {
   late Dio dio;
@@ -14,6 +15,16 @@ class PengajuanService {
       ),
     );
 
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final headers = await ApiHelper.headers();
+          options.headers.addAll(headers);
+          return handler.next(options);
+        },
+      ),
+    );
+
     dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
   }
 
@@ -22,7 +33,7 @@ class PengajuanService {
     try {
       final res = await dio.post(
         ApiConfig.checkDomain,
-        data: {'nama_domain': domain},
+        data: {"nama_domain": domain},
       );
 
       return res.data['available'] == true;
@@ -41,7 +52,7 @@ class PengajuanService {
     try {
       FormData formData = FormData();
 
-      formData.fields.add(MapEntry('nama_domain', domain));
+      formData.fields.add(MapEntry("nama_domain", domain));
 
       data.forEach((key, value) {
         formData.fields.add(MapEntry(key, value));
@@ -62,13 +73,13 @@ class PengajuanService {
       }
 
       await addFile('surat_permohonan', files['surat_permohonan']);
+      await addFile('perda_pembentukan_desa', files['perda_pembentukan_desa']);
       await addFile('surat_kuasa', files['surat_kuasa']);
       await addFile(
         'surat_penunjukan_pejabat',
         files['surat_penunjukan_pejabat'],
       );
       await addFile('ktp_asn_pejabat', files['ktp_asn_pejabat']);
-      await addFile('perda_pembentukan_desa', files['perda_pembentukan_desa']);
 
       final res = await dio.post(ApiConfig.submitPengajuan, data: formData);
 
@@ -79,7 +90,21 @@ class PengajuanService {
     }
   }
 
-  // ================= GET LIST =================
+  // ================= RIWAYAT USER =================
+  Future<List<Pengajuan>> getPengajuanUser() async {
+    try {
+      final res = await dio.get(ApiConfig.getPengajuanUser);
+
+      final List list = res.data['data'];
+
+      return list.map((e) => Pengajuan.fromJson(e)).toList();
+    } catch (e) {
+      print("ERROR USER LIST: $e");
+      return [];
+    }
+  }
+
+  // ================= ADMIN LIST =================
   Future<List<Pengajuan>> getPengajuanAdmin() async {
     try {
       final res = await dio.get(ApiConfig.getPengajuan);
@@ -88,12 +113,12 @@ class PengajuanService {
 
       return list.map((e) => Pengajuan.fromJson(e)).toList();
     } catch (e) {
-      print("ERROR LIST: $e");
+      print("ERROR ADMIN LIST: $e");
       return [];
     }
   }
 
-  // ================= GET DETAIL (FIX UTAMA) =================
+  // ================= DETAIL =================
   Future<Pengajuan> getDetail(int id) async {
     try {
       final res = await dio.get("/admin/pengajuan/$id");
@@ -117,7 +142,7 @@ class PengajuanService {
   }) async {
     try {
       final res = await dio.post(
-        "/pengajuan/verifikasi/$id",
+        "${ApiConfig.verifikasi}/$id",
         data: {"status": status, "catatan": catatan},
       );
 

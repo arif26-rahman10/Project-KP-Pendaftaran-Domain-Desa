@@ -21,6 +21,11 @@ class LocalAuthService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
+    print("SAVE USER:");
+    print("Nama: $fullName");
+    print("Email: $email");
+    print("Phone: $phone");
+
     await prefs.setInt(keyIdUser, idUser);
     await prefs.setString(keyFullName, fullName);
     await prefs.setString(keyUsername, username);
@@ -32,7 +37,7 @@ class LocalAuthService {
   static Future<Map<String, dynamic>> getRegisteredUser() async {
     final prefs = await SharedPreferences.getInstance();
 
-    return {
+    final data = {
       'id_user': prefs.getInt(keyIdUser),
       'fullName': prefs.getString(keyFullName),
       'username': prefs.getString(keyUsername),
@@ -40,11 +45,14 @@ class LocalAuthService {
       'phone': prefs.getString(keyPhone),
       'password': prefs.getString(keyPassword),
     };
+
+    print("LOAD USER:");
+    print(data);
+
+    return data;
   }
 
-  static Future<void> setLoginStatus({
-    required bool rememberMe,
-  }) async {
+  static Future<void> setLoginStatus({required bool rememberMe}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(keyIsLoggedIn, true);
     await prefs.setBool(keyRememberMe, rememberMe);

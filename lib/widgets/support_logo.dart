@@ -9,10 +9,7 @@ class SupportLogo extends StatelessWidget {
       children: [
         Text(
           'Support By:',
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 14,
-          ),
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
         ),
         const SizedBox(height: 10),
         Image.asset(
