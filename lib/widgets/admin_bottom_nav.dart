@@ -3,13 +3,14 @@ import '../pages/admin/home_page.dart';
 import '../pages/admin/domain/admin_domain_menu.dart';
 import '../pages/admin/faktur_page.dart';
 import '../pages/admin/profile_page.dart';
+import '../services/local_auth_service.dart';
 
 class AdminBottomNav extends StatelessWidget {
   final int currentIndex;
 
   const AdminBottomNav({super.key, required this.currentIndex});
 
-  void _onTap(BuildContext context, int index) {
+  void _onTap(BuildContext context, int index) async {
     if (index == currentIndex) return;
 
     Widget page;
@@ -18,15 +19,24 @@ class AdminBottomNav extends StatelessWidget {
       case 0:
         page = const AdminHomePage();
         break;
+
       case 1:
         page = AdminDomainMenu();
         break;
+
       case 2:
         page = const FakturPage();
         break;
+
       case 3:
-        page = const ProfilePage();
+        final user = await LocalAuthService.getRegisteredUser();
+
+        page = AdminProfilePage(
+          fullName: user['fullName'] ?? '',
+          username: user['username'] ?? '',
+        );
         break;
+
       default:
         return;
     }

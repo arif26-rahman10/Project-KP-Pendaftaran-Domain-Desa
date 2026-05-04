@@ -249,7 +249,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 10),
 
-                  // 🔴 BUTTON SIMPAN
                   SizedBox(
                     width: double.infinity,
                     height: 45,
@@ -271,7 +270,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 12),
 
-                  // 📄 INFORMASI INSTANSI
                   _menuTile(
                     icon: Icons.info_outline,
                     text: "Informasi Instansi",
@@ -287,7 +285,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 10),
 
-                  // 🚪 LOGOUT
                   _menuTile(
                     icon: Icons.logout,
                     text: "Keluar",
