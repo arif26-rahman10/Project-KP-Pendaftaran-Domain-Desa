@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../services/api_service.dart';
 import '../../services/registration_data.dart';
 import '../../widgets/step_form_layout.dart';
 import 'pdf_preview_page.dart';
 import '../../services/pengajuan_service.dart';
+import '../verif_dok/verifikasi_dokumen_page.dart';
 
 class Step4Pratinjau extends StatefulWidget {
   final RegistrationData data;
@@ -39,22 +39,17 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
         files: widget.data.filePaths,
       );
 
-      if (success) {
-        print("Berhasil kirim");
-      } else {
-        print("Gagal kirim");
-      }
+      if (!mounted) return;
 
-      Navigator.popUntil(context, (route) => route.isFirst);
+      if (success) {
+        await _showSuccessPopup();
+      } else {
+        await _showErrorPopup("Pengajuan gagal dikirim. Silakan coba lagi.");
+      }
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll("Exception: ", "")),
-          backgroundColor: Colors.red,
-        ),
-      );
+      await _showErrorPopup(e.toString().replaceAll("Exception: ", ""));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -194,6 +189,113 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
               )
             : null,
       ),
+    );
+  }
+
+  // ================= SUCCESS POPUP =================
+  Future<void> _showSuccessPopup() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green, size: 70),
+                const SizedBox(height: 12),
+                const Text(
+                  "Berhasil!",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "Pengajuan domain berhasil dikirim.",
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const VerifikasiDokumenPage(),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                    child: const Text("Lanjut"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ================= ERROR POPUP =================
+  Future<void> _showErrorPopup(String message) async {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error, color: Colors.red, size: 70),
+                const SizedBox(height: 12),
+                const Text(
+                  "Gagal!",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(message, textAlign: TextAlign.center),
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Coba Lagi"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
