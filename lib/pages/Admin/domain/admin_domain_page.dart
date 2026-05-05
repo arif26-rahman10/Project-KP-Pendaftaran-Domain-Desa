@@ -30,7 +30,6 @@ class _DomainPageState extends State<DomainPage> {
 
     final res = await PengajuanService().getPengajuanAdmin();
 
-    // 🔥 SORT TERBARU DI ATAS
     res.sort((a, b) => b.id.compareTo(a.id));
 
     setState(() {

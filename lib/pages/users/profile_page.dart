@@ -284,7 +284,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 10),
 
-                  // 🚪 LOGOUT
                   _menuTile(
                     icon: Icons.logout,
                     text: "Keluar",

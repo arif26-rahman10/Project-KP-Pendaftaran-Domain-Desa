@@ -1,9 +1,16 @@
 class ApiConfig {
   static const String baseUrl =
+<<<<<<< HEAD
       "https://trade-lusty-doorbell.ngrok-free.dev/api";
 
   static const String storageUrl =
       "https://trade-lusty-doorbell.ngrok-free.dev/storage";
+=======
+      "https://ed1c-103-166-161-146.ngrok-free.app/api";
+
+  static const String storageUrl =
+      "https://ed1c-103-166-161-146.ngrok-free.app/storage";
+>>>>>>> 8e0cfca2877ce19352f8ec6a651f9a1dc5e76b72
 
   // AUTH
   static const String login = "/login";
