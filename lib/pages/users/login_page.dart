@@ -46,6 +46,8 @@ class _LoginPageState extends State<LoginPage> {
         password: password,
       );
 
+      print("LOGIN RESULT: $result");
+
       if (!mounted) return;
 
       final user = result['user'];
@@ -67,18 +69,27 @@ class _LoginPageState extends State<LoginPage> {
           password: password,
         );
 
+        await LocalAuthService.setLoginStatus(
+          rememberMe: true,
+        );
+
         if (!mounted) return;
 
         if (role == 'admin') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const AdminHomePage()),
+            MaterialPageRoute(
+              builder: (_) => const AdminHomePage(),
+            ),
           );
         } else if (role == 'desa') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => HomePage(fullName: name, username: uname),
+              builder: (_) => HomePage(
+                fullName: name,
+                username: uname,
+              ),
             ),
           );
         } else {
@@ -88,10 +99,14 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else {
         setState(() {
-          _errorMessage = 'Username atau password salah';
+          _errorMessage = result['message']?.toString() ??
+              'Username atau password salah';
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print("LOGIN ERROR DETAIL: $e");
+      print("STACKTRACE: $stackTrace");
+
       if (!mounted) return;
 
       setState(() {
@@ -99,7 +114,9 @@ class _LoginPageState extends State<LoginPage> {
       });
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -145,7 +162,6 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ),
-
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 40, 24, 0),
@@ -153,7 +169,6 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 80),
-
                   const Text(
                     'Selamat Datang di\nNama Aplikasi',
                     style: TextStyle(
@@ -163,17 +178,16 @@ class _LoginPageState extends State<LoginPage> {
                       color: kPrimary,
                     ),
                   ),
-
                   const SizedBox(height: 12),
-
                   const Text(
                     'Silakan login untuk melanjutkan',
-                    style: TextStyle(color: kPrimary, fontSize: 14),
+                    style: TextStyle(
+                      color: kPrimary,
+                      fontSize: 14,
+                    ),
                   ),
-
                   const SizedBox(height: 28),
 
-                  /// ERROR MESSAGE
                   if (_errorMessage != null)
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -181,7 +195,9 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: BoxDecoration(
                         color: Colors.red.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                        border: Border.all(
+                          color: Colors.red.withOpacity(0.3),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -204,19 +220,19 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
-                  /// USERNAME
                   CustomField(
                     icon: Icons.person_outline,
                     hint: 'Masukkan Username',
                     controller: usernameController,
                     onChanged: (_) {
                       if (_errorMessage != null) {
-                        setState(() => _errorMessage = null);
+                        setState(() {
+                          _errorMessage = null;
+                        });
                       }
                     },
                   ),
 
-                  /// PASSWORD
                   CustomField(
                     icon: Icons.lock_outline,
                     hint: 'Password',
@@ -239,7 +255,6 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 20),
 
-                  /// BUTTON LOGIN
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -253,7 +268,14 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : const Text(
                               'Masuk',
                               style: TextStyle(
@@ -269,12 +291,15 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-
           const Positioned(
             left: 0,
             right: 0,
             bottom: 20,
-            child: SafeArea(child: Center(child: SupportLogo())),
+            child: SafeArea(
+              child: Center(
+                child: SupportLogo(),
+              ),
+            ),
           ),
         ],
       ),
