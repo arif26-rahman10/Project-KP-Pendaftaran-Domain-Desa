@@ -1,9 +1,9 @@
 class ApiConfig {
   static const String baseUrl =
-      "https://72d7-103-166-161-146.ngrok-free.app/api";
+      "https://trade-lusty-doorbell.ngrok-free.dev/api";
 
   static const String storageUrl =
-      "https://72d7-103-166-161-146.ngrok-free.app/storage";
+      "https://trade-lusty-doorbell.ngrok-free.dev/storage";
 
   // AUTH
   static const String login = "/login";
@@ -19,13 +19,13 @@ class ApiConfig {
 
   // PENGAJUAN
   static const String submitPengajuan = "/pengajuan/submit";
-  static const String getPengajuanUser = "/pengajuan/riwayat";
+  static const String getPengajuanUser = "/pengajuan/user";
   static const String checkDomain = "/pengajuan/check-domain";
 
   // ADMIN
   static const String getPengajuan = "/admin/pengajuan";
   static const String aktivasi = "/admin/aktivasi";
-  static const String verifikasi = "/pengajuan/verifikasi";
+  static const String verifikasi = "/admin/verifikasi";
 
   static String url(String endpoint) => baseUrl + endpoint;
 }

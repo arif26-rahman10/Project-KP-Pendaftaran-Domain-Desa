@@ -55,9 +55,7 @@ class DetailDomainPage extends StatelessWidget {
   }
 
   double _statusFontSize() {
-    if (status == 'Menunggu Pembayaran') {
-      return 10;
-    }
+    if (status == 'Menunggu Pembayaran') return 10;
     return 12;
   }
 
@@ -147,16 +145,17 @@ class DetailDomainPage extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => const DetailFakturPage(
+            builder: (_) => DetailFakturPage(
+              idPengajuan: 0,
               fullName: 'Pengguna',
               username: 'user',
               invoiceNumber: 'INV-023',
               tanggalTerbit: 'xx/xx/xxxx',
               tanggalKadaluarsa: 'xx/xx/xxxx',
-              namaDomain: 'xxx.desa.id',
-              jenisAplikasi: 'Registrasi',
-              durasi: '1 Tahun',
-              harga: 'Rp.50.000',
+              namaDomain: namaDomain,
+              jenisAplikasi: tipeAplikasi,
+              durasi: masaAktif,
+              harga: harga,
             ),
           ),
         );
@@ -167,16 +166,17 @@ class DetailDomainPage extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => const DetailFakturPage(
+            builder: (_) => DetailFakturPage(
+              idPengajuan: 0,
               fullName: 'Pengguna',
               username: 'user',
               invoiceNumber: 'INV-024',
               tanggalTerbit: 'xx/xx/xxxx',
               tanggalKadaluarsa: 'xx/xx/xxxx',
-              namaDomain: 'xxx.desa.id',
+              namaDomain: namaDomain,
               jenisAplikasi: 'Perpanjangan',
               durasi: '1 Tahun',
-              harga: 'Rp.50.000',
+              harga: harga,
             ),
           ),
         );
@@ -209,7 +209,6 @@ class DetailDomainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topSafe = MediaQuery.of(context).padding.top;
-
     final bool showAksi =
         status == 'Menunggu Pembayaran' || status == 'Kadaluarsa';
 

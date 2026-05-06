@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../main.dart';
+import '../../models/pengajuan_model.dart';
+import '../../services/pengajuan_service.dart';
 import 'detail_faktur_page.dart';
 import '../home_page.dart';
 import '../domain/domain_page.dart';
@@ -18,6 +21,34 @@ class FakturPage extends StatefulWidget {
 
 class _FakturPageState extends State<FakturPage> {
   int currentIndex = 2;
+  bool isLoading = true;
+  List<Pengajuan> listFaktur = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFaktur();
+  }
+
+  Future<void> _loadFaktur() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final data = await PengajuanService().getPengajuanUser();
+
+    if (!mounted) return;
+
+    setState(() {
+      listFaktur = data.where((item) {
+        return item.status == 'diproses' ||
+            item.status == 'menunggu_aktivasi' ||
+            item.status == 'aktif';
+      }).toList();
+
+      isLoading = false;
+    });
+  }
 
   void _onTapNav(int index) {
     if (index == currentIndex) return;
@@ -39,9 +70,7 @@ class _FakturPageState extends State<FakturPage> {
         ),
       );
     } else if (index == 2) {
-      setState(() {
-        currentIndex = 2;
-      });
+      _loadFaktur();
     } else if (index == 3) {
       Navigator.pushReplacement(
         context,
@@ -53,42 +82,52 @@ class _FakturPageState extends State<FakturPage> {
     }
   }
 
-  Widget _invoiceCard({
-    required String invoice,
-    required String tglTerbit,
-    required String tglKadaluarsa,
-    required String namaDomain,
-    required String jenisAplikasi,
-    required String durasi,
-    required String harga,
-    bool grey = false,
-  }) {
+  Widget _invoiceCard(Pengajuan item) {
+    final invoice = item.noInvoice.isNotEmpty
+        ? item.noInvoice
+        : "INV-${item.id}";
+    final domain = "${item.domain}.desa.id";
+
+    final bool buktiSudahDikirim =
+        item.buktiPembayaranUrl.isNotEmpty ||
+        item.fakturStatus == 'sudah_bayar' ||
+        item.status == 'menunggu_aktivasi';
+
     return InkWell(
       borderRadius: BorderRadius.circular(12),
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        final result = await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => DetailFakturPage(
+              idPengajuan: item.id,
               fullName: widget.fullName,
               username: widget.username,
               invoiceNumber: invoice,
-              tanggalTerbit: tglTerbit,
-              tanggalKadaluarsa: tglKadaluarsa,
-              namaDomain: namaDomain,
-              jenisAplikasi: jenisAplikasi,
-              durasi: durasi,
-              harga: harga,
+              tanggalTerbit: item.tanggal,
+              tanggalKadaluarsa: "-",
+              namaDomain: domain,
+              jenisAplikasi: "Registrasi Domain",
+              durasi: "1 Tahun",
+              harga: item.totalFaktur.isNotEmpty
+                  ? "Rp.${item.totalFaktur}"
+                  : "Rp.50.000",
+              buktiPembayaranUrl: item.buktiPembayaranUrl,
+              fakturStatus: item.fakturStatus,
             ),
           ),
         );
+
+        if (result == true) {
+          _loadFaktur();
+        }
       },
       child: Container(
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: grey ? Colors.grey.shade300 : Colors.white,
+          color: buktiSudahDikirim ? Colors.grey.shade300 : Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
             BoxShadow(
@@ -108,8 +147,18 @@ class _FakturPageState extends State<FakturPage> {
             const SizedBox(height: 6),
             Text(invoice, style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
-            Text("Tanggal Terbit : $tglTerbit"),
-            Text("Tanggal Kadaluarsa : $tglKadaluarsa"),
+            Text("Nama Domain : $domain"),
+            Text("Tanggal Terbit : ${item.tanggal}"),
+            const SizedBox(height: 6),
+            Text(
+              buktiSudahDikirim
+                  ? "Status : Bukti pembayaran sudah dikirim"
+                  : "Status : Menunggu pembayaran",
+              style: TextStyle(
+                color: buktiSudahDikirim ? Colors.orange : Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),
@@ -192,36 +241,30 @@ class _FakturPageState extends State<FakturPage> {
           ),
 
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
-              child: Column(
-                children: [
-                  _invoiceCard(
-                    invoice: "INV-023",
-                    tglTerbit: "xx/xx/xxxx",
-                    tglKadaluarsa: "xx/xx/xxxx",
-                    namaDomain: "xxx.desa.id",
-                    jenisAplikasi: "Registrasi",
-                    durasi: "1 Tahun",
-                    harga: "Rp.50.000",
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
+                    onRefresh: _loadFaktur,
+                    child: listFaktur.isEmpty
+                        ? ListView(
+                            children: const [
+                              SizedBox(height: 260),
+                              Center(
+                                child: Text("Belum ada faktur pembayaran"),
+                              ),
+                            ],
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(24, 22, 24, 20),
+                            itemCount: listFaktur.length,
+                            itemBuilder: (context, index) {
+                              return _invoiceCard(listFaktur[index]);
+                            },
+                          ),
                   ),
-                  _invoiceCard(
-                    invoice: "INV-022",
-                    tglTerbit: "xx/xx/xxxx",
-                    tglKadaluarsa: "xx/xx/xxxx",
-                    namaDomain: "xxx.desa.id",
-                    jenisAplikasi: "Registrasi",
-                    durasi: "1 Tahun",
-                    harga: "Rp.50.000",
-                    grey: true,
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),
-
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(
           0,

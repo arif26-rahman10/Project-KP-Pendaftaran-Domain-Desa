@@ -18,6 +18,7 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
   String selectedStatus = '';
   final TextEditingController catatan = TextEditingController();
   bool isLoading = false;
+  bool sudahSetStatusAwal = false;
 
   @override
   void initState() {
@@ -26,7 +27,73 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
   }
 
   @override
+  void dispose() {
+    catatan.dispose();
+    super.dispose();
+  }
+
+  void pilihStatus(String status) {
+    setState(() {
+      selectedStatus = status;
+    });
+
+    debugPrint("STATUS DIPILIH: $selectedStatus");
+  }
+
+  Future<void> kirimVerifikasi(Pengajuan item) async {
+    if (selectedStatus.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Pilih status terlebih dahulu")),
+      );
+      return;
+    }
+
+    if (selectedStatus == "perlu_perbaikan" && catatan.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Catatan wajib diisi jika perlu perbaikan"),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      await PengajuanService().verifikasiPengajuan(
+        id: item.id,
+        status: selectedStatus,
+        catatan: catatan.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Berhasil verifikasi")));
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal: $e")));
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    debugPrint("DETAIL DOMAIN PAGE DIPAKAI");
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Detail Pengajuan"),
@@ -41,7 +108,16 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
           }
 
           final item = snapshot.data!;
-          selectedStatus = item.status;
+
+          if (!sudahSetStatusAwal) {
+            if (item.status == "diproses" || item.status == "perlu_perbaikan") {
+              selectedStatus = item.status;
+            } else {
+              selectedStatus = "";
+            }
+
+            sudahSetStatusAwal = true;
+          }
 
           return SingleChildScrollView(
             child: Column(
@@ -54,7 +130,6 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
 
                 const SizedBox(height: 10),
 
-                // ================= DOKUMEN =================
                 _sectionTitle("Dokumen Persyaratan"),
                 _fileTile("Surat Permohonan", "surat_permohonan", item),
                 _fileTile(
@@ -81,8 +156,6 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
     );
   }
 
-  // ================= WIDGET =================
-
   Widget _sectionTitle(String title) {
     return Container(
       width: double.infinity,
@@ -95,7 +168,7 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
   Widget _infoTile(String label, String value) {
     return ListTile(
       title: Text(label, style: const TextStyle(color: Colors.blue)),
-      trailing: Text(value),
+      trailing: Text(value.isEmpty ? "-" : value),
     );
   }
 
@@ -144,22 +217,49 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
               style: TextStyle(color: Colors.green),
             ),
           ] else ...[
-            RadioListTile(
-              value: "diproses",
-              groupValue: selectedStatus,
-              onChanged: (val) {
-                setState(() => selectedStatus = val!);
-              },
-              title: const Text("Diproses"),
+            InkWell(
+              onTap: isLoading ? null : () => pilihStatus("diproses"),
+              child: Row(
+                children: [
+                  Radio<String>(
+                    value: "diproses",
+                    groupValue: selectedStatus,
+                    activeColor: Colors.red,
+                    onChanged: isLoading
+                        ? null
+                        : (value) {
+                            if (value != null) {
+                              pilihStatus(value);
+                            }
+                          },
+                  ),
+                  const Expanded(child: Text("Diproses")),
+                ],
+              ),
             ),
-            RadioListTile(
-              value: "perlu_perbaikan", // 🔥 FIX
-              groupValue: selectedStatus,
-              onChanged: (val) {
-                setState(() => selectedStatus = val!);
-              },
-              title: const Text("Perlu Perbaikan"),
+
+            InkWell(
+              onTap: isLoading ? null : () => pilihStatus("perlu_perbaikan"),
+              child: Row(
+                children: [
+                  Radio<String>(
+                    value: "perlu_perbaikan",
+                    groupValue: selectedStatus,
+                    activeColor: Colors.red,
+                    onChanged: isLoading
+                        ? null
+                        : (value) {
+                            if (value != null) {
+                              pilihStatus(value);
+                            }
+                          },
+                  ),
+                  const Expanded(child: Text("Perlu Perbaikan")),
+                ],
+              ),
             ),
+
+            const SizedBox(height: 10),
 
             TextField(
               controller: catatan,
@@ -175,34 +275,11 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        setState(() => isLoading = true);
-
-                        try {
-                          await PengajuanService().verifikasiPengajuan(
-                            id: item.id,
-                            status: selectedStatus,
-                            catatan: catatan.text,
-                          );
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Berhasil verifikasi"),
-                            ),
-                          );
-
-                          Navigator.pop(context, true);
-                        } catch (e) {
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(SnackBar(content: Text("Gagal: $e")));
-                        } finally {
-                          setState(() => isLoading = false);
-                        }
-                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: isLoading ? null : () => kirimVerifikasi(item),
                 child: isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text("Kirim"),

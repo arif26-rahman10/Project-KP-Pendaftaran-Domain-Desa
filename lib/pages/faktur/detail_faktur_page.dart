@@ -4,14 +4,17 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../main.dart';
-import '../../services/local_auth_service.dart';
 import '../../services/api_service.dart';
+import '../../services/local_auth_service.dart';
+import '../../services/pengajuan_service.dart';
 import '../domain/domain_page.dart';
-import 'faktur_page.dart';
 import '../home_page.dart';
 import '../users/profile_page.dart';
+import 'bukti_pembayaran_page.dart';
+import 'faktur_page.dart';
 
 class DetailFakturPage extends StatefulWidget {
+  final int idPengajuan;
   final String fullName;
   final String username;
   final String invoiceNumber;
@@ -21,9 +24,12 @@ class DetailFakturPage extends StatefulWidget {
   final String jenisAplikasi;
   final String durasi;
   final String harga;
+  final String buktiPembayaranUrl;
+  final String fakturStatus;
 
   const DetailFakturPage({
     super.key,
+    required this.idPengajuan,
     required this.fullName,
     required this.username,
     required this.invoiceNumber,
@@ -33,6 +39,8 @@ class DetailFakturPage extends StatefulWidget {
     required this.jenisAplikasi,
     required this.durasi,
     required this.harga,
+    this.buktiPembayaranUrl = '',
+    this.fakturStatus = '',
   });
 
   @override
@@ -43,11 +51,14 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
   int currentIndex = 2;
 
   String namaInstansi = '';
-  String namaKepalaDesa = '';
   String emailUser = '';
   String alamatKantor = '';
   String namaFile = '';
   File? selectedFile;
+
+  bool isLoading = false;
+
+  bool get buktiSudahDikirim => widget.buktiPembayaranUrl.isNotEmpty;
 
   @override
   void initState() {
@@ -66,9 +77,8 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
         if (!mounted) return;
 
         setState(() {
-          namaInstansi = 'Kelapapati';
-          namaKepalaDesa = 'Kelapapati';
-          alamatKantor = 'Jl. Kelapapati Tengah';
+          namaInstansi = widget.fullName;
+          alamatKantor = '-';
           emailUser = email;
         });
 
@@ -81,21 +91,16 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
       if (!mounted) return;
 
       setState(() {
-        namaInstansi = desa?['nama_desa']?.toString() ?? 'Kelapapati';
-        namaKepalaDesa =
-            desa?['nama_kepala_desa']?.toString() ?? 'Kelapapati';
-        alamatKantor = desa?['alamat']?.toString() ?? 'Jl. Kelapapati Tengah';
+        namaInstansi = desa?['nama_desa']?.toString() ?? widget.fullName;
+        alamatKantor = desa?['alamat']?.toString() ?? '-';
         emailUser = email;
       });
     } catch (e) {
-      print("LOAD FAKTUR DATA ERROR: $e");
-
       if (!mounted) return;
 
       setState(() {
-        namaInstansi = 'Kelapapati';
-        namaKepalaDesa = 'Kelapapati';
-        alamatKantor = 'Jl. Kelapapati Tengah';
+        namaInstansi = widget.fullName;
+        alamatKantor = '-';
         emailUser = 'user@gmail.com';
       });
     }
@@ -115,19 +120,114 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
     }
   }
 
-  void _kirimBukti() {
-    if (selectedFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Silakan pilih file bukti pembayaran terlebih dahulu'),
-        ),
+  void _lihatBuktiPembayaran() {
+    if (widget.buktiPembayaranUrl.isEmpty) {
+      _showSnackBar(
+        message: 'Bukti pembayaran belum tersedia',
+        color: Colors.red,
+        icon: Icons.warning,
       );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Bukti pembayaran "$namaFile" berhasil dikirim')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BuktiPembayaranPage(url: widget.buktiPembayaranUrl),
+      ),
     );
+  }
+
+  void _showSnackBar({
+    required String message,
+    required Color color,
+    required IconData icon,
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: color,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _kirimBukti() async {
+    if (selectedFile == null) {
+      _showSnackBar(
+        message: 'Silakan pilih file bukti pembayaran terlebih dahulu',
+        color: Colors.red,
+        icon: Icons.warning,
+      );
+      return;
+    }
+
+    if (widget.idPengajuan == 0) {
+      _showSnackBar(
+        message: 'ID pengajuan tidak ditemukan',
+        color: Colors.red,
+        icon: Icons.error,
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      await PengajuanService().uploadBuktiPembayaran(
+        idPengajuan: widget.idPengajuan,
+        filePath: selectedFile!.path,
+      );
+
+      if (!mounted) return;
+
+      _showSnackBar(
+        message: 'Bukti pembayaran berhasil dikirim',
+        color: Colors.green,
+        icon: Icons.check_circle,
+      );
+
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              FakturPage(fullName: widget.fullName, username: widget.username),
+        ),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      _showSnackBar(
+        message: 'Gagal mengirim bukti pembayaran: $e',
+        color: Colors.red,
+        icon: Icons.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   void _onTapNav(int index) {
@@ -224,6 +324,154 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
     );
   }
 
+  Widget _buktiSudahDikirimView() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.green.shade50,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.green.shade200),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Bukti pembayaran sudah dikirim',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          width: double.infinity,
+          height: 46,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kPrimary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(9),
+              ),
+            ),
+            onPressed: _lihatBuktiPembayaran,
+            icon: const Icon(Icons.visibility),
+            label: const Text(
+              'Lihat Bukti Pembayaran',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _uploadBuktiView() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: const TextSpan(
+            text: 'Bukti Pembayaran ',
+            style: TextStyle(fontSize: 14, color: Colors.black87),
+            children: [
+              TextSpan(
+                text: '*',
+                style: TextStyle(color: Colors.red),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Row(
+            children: [
+              Container(
+                margin: const EdgeInsets.all(4),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPrimary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  onPressed: isLoading ? null : _pickFile,
+                  child: const Text(
+                    'Choose File',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Text(
+                    namaFile.isEmpty ? 'Belum ada file dipilih' : namaFile,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: namaFile.isEmpty
+                          ? Colors.grey.shade500
+                          : Colors.black87,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        SizedBox(
+          width: double.infinity,
+          height: 46,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kPrimary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(9),
+              ),
+            ),
+            onPressed: isLoading ? null : _kirimBukti,
+            child: isLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Text(
+                    'Kirim Bukti Pembayaran',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final topSafe = MediaQuery.of(context).padding.top;
@@ -247,11 +495,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
               children: [
                 InkWell(
                   onTap: () => Navigator.pop(context),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
                 const SizedBox(width: 12),
                 const Text(
@@ -280,33 +524,19 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    widget.invoiceNumber,
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
+                  Text(widget.invoiceNumber),
                   const SizedBox(height: 3),
-                  Text(
-                    'Tanggal Terbit : ${widget.tanggalTerbit}',
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                  ),
+                  Text('Tanggal Terbit : ${widget.tanggalTerbit}'),
                   const SizedBox(height: 3),
-                  Text(
-                    'Tanggal Kadaluarsa : ${widget.tanggalKadaluarsa}',
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                  ),
+                  Text('Tanggal Kadaluarsa : ${widget.tanggalKadaluarsa}'),
                   const SizedBox(height: 18),
-
                   const Text(
                     'Instansi',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    namaInstansi.isEmpty ? 'Kelapapati' : namaInstansi,
+                    namaInstansi.isEmpty ? widget.fullName : namaInstansi,
                     style: const TextStyle(
                       fontSize: 14,
                       color: Color(0xFF3F51B5),
@@ -314,24 +544,10 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                     ),
                   ),
                   const SizedBox(height: 3),
-                  Text(
-                    emailUser.isEmpty ? 'user@gmail.com' : emailUser,
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
-                  ),
+                  Text(emailUser.isEmpty ? 'user@gmail.com' : emailUser),
                   const SizedBox(height: 3),
-                  Text(
-                    alamatKantor.isEmpty
-                        ? 'Jl. Kelapapati Tengah'
-                        : alamatKantor,
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '$namaInstansi, Bengkalis, Bengkalis, Riau',
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                  ),
+                  Text(alamatKantor.isEmpty ? '-' : alamatKantor),
                   const SizedBox(height: 18),
-
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -347,23 +563,12 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                     ),
                   ),
                   const SizedBox(height: 18),
-
-                  Text(
-                    'Mohon Mencantumkan Nomor Invoice pada saat melakukan pembayaran.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade800,
-                      height: 1.4,
-                    ),
+                  const Text(
+                    'Mohon mencantumkan nomor invoice saat melakukan pembayaran.',
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Silahkan lakukan pembayaran melalui transfer ke rekening di bawah ini:',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade800,
-                      height: 1.4,
-                    ),
+                  const Text(
+                    'Silakan lakukan pembayaran melalui transfer ke rekening di bawah ini:',
                   ),
                   const SizedBox(height: 12),
                   const Text(
@@ -375,106 +580,13 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                     ),
                   ),
                   const SizedBox(height: 3),
-                  Text(
-                    'Nama BRI',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade800),
-                  ),
+                  const Text('Bank BRI'),
                   const SizedBox(height: 3),
-                  Text(
-                    'Jalan XXXXX',
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    'Account Number xxxxxxxxxxx',
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                  ),
+                  const Text('Account Number xxxxxxxxxxx'),
                   const SizedBox(height: 18),
-
-                  RichText(
-                    text: const TextSpan(
-                      text: 'Bukti Pembayaran ',
-                      style: TextStyle(fontSize: 14, color: Colors.black87),
-                      children: [
-                        TextSpan(
-                          text: '*',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.all(4),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: kPrimary,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                            ),
-                            onPressed: _pickFile,
-                            child: const Text(
-                              'Choose File',
-                              style: TextStyle(fontSize: 13),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 12),
-                            child: Text(
-                              namaFile.isEmpty
-                                  ? 'Belum ada file dipilih'
-                                  : namaFile,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: namaFile.isEmpty
-                                    ? Colors.grey.shade500
-                                    : Colors.black87,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 46,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: kPrimary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                      ),
-                      onPressed: _kirimBukti,
-                      child: const Text(
-                        'Kirim',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
+                  buktiSudahDikirim
+                      ? _buktiSudahDikirimView()
+                      : _uploadBuktiView(),
                 ],
               ),
             ),
