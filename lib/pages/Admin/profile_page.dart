@@ -110,8 +110,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromARGB(255, 114, 15, 23),
-                  Color.fromARGB(255, 125, 13, 13),
+                  Color.fromARGB(255, 64, 5, 10),
+                  Color.fromARGB(255, 175, 25, 25),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -120,19 +120,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             ),
             child: Column(
               children: [
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Admin Profile",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
                 Container(
                   width: 90,
                   height: 90,

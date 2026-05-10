@@ -1,9 +1,9 @@
 class ApiConfig {
   static const String baseUrl =
-      "https://72d7-103-166-161-146.ngrok-free.app/api";
+      "https://cec0-2001-448a-1041-e855-cdbc-ea70-2f6d-69c4.ngrok-free.app/api";
 
   static const String storageUrl =
-      "https://72d7-103-166-161-146.ngrok-free.app/storage";
+      "https://cec0-2001-448a-1041-e855-cdbc-ea70-2f6d-69c4.ngrok-free.app/storage";
 
   // AUTH
   static const String login = "/login";
@@ -25,7 +25,7 @@ class ApiConfig {
   // ADMIN
   static const String getPengajuan = "/admin/pengajuan";
   static const String aktivasi = "/admin/aktivasi";
-  static const String verifikasi = "/pengajuan/verifikasi";
+  static const String verifikasi = "/admin/verifikasi";
 
   static String url(String endpoint) => baseUrl + endpoint;
 }
