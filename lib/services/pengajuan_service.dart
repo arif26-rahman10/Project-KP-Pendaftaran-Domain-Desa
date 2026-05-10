@@ -27,12 +27,7 @@ class PengajuanService {
       ),
     );
 
-    dio.interceptors.add(
-      LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-      ),
-    );
+    dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
   }
 
   // ================= CEK DOMAIN =================
@@ -40,9 +35,7 @@ class PengajuanService {
     try {
       final res = await dio.post(
         ApiConfig.checkDomain,
-        data: {
-          "nama_domain": domain,
-        },
+        data: {"nama_domain": domain},
       );
 
       return res.data['available'] == true;
@@ -94,10 +87,7 @@ class PengajuanService {
       );
       await addFile('ktp_asn_pejabat', files['ktp_asn_pejabat']);
 
-      final res = await dio.post(
-        ApiConfig.submitPengajuan,
-        data: formData,
-      );
+      final res = await dio.post(ApiConfig.submitPengajuan, data: formData);
 
       print("SUBMIT RESPONSE: ${res.data}");
 
@@ -116,9 +106,7 @@ class PengajuanService {
 
       final res = await dio.post(
         ApiConfig.getPengajuanUser,
-        data: {
-          "id_user": idUser,
-        },
+        data: {"id_user": idUser},
       );
 
       print("GET PENGAJUAN USER RESPONSE: ${res.data}");
@@ -126,9 +114,7 @@ class PengajuanService {
       final List list = res.data['data'] ?? [];
 
       return list.map((e) {
-        return Pengajuan.fromJson(
-          Map<String, dynamic>.from(e),
-        );
+        return Pengajuan.fromJson(Map<String, dynamic>.from(e));
       }).toList();
     } catch (e) {
       print("ERROR USER LIST: $e");
@@ -144,9 +130,7 @@ class PengajuanService {
       final List list = res.data['data'] ?? [];
 
       return list.map((e) {
-        return Pengajuan.fromJson(
-          Map<String, dynamic>.from(e),
-        );
+        return Pengajuan.fromJson(Map<String, dynamic>.from(e));
       }).toList();
     } catch (e) {
       print("ERROR ADMIN LIST: $e");
@@ -160,9 +144,7 @@ class PengajuanService {
       final res = await dio.get("/admin/pengajuan/$id");
 
       if (res.data['success'] == true) {
-        return Pengajuan.fromJson(
-          Map<String, dynamic>.from(res.data['data']),
-        );
+        return Pengajuan.fromJson(Map<String, dynamic>.from(res.data['data']));
       } else {
         throw Exception("Data tidak ditemukan");
       }
@@ -181,10 +163,7 @@ class PengajuanService {
     try {
       final res = await dio.post(
         "${ApiConfig.verifikasi}/$id",
-        data: {
-          "status": status,
-          "catatan": catatan,
-        },
+        data: {"status": status, "catatan": catatan},
       );
 
       if (res.data['success'] != true) {
@@ -237,10 +216,7 @@ class PengajuanService {
         );
       }
 
-      final res = await dio.post(
-        "/pengajuan/update/$id",
-        data: formData,
-      );
+      final res = await dio.post("/pengajuan/update/$id", data: formData);
 
       print("UPDATE PENGAJUAN RESPONSE: ${res.data}");
 
@@ -279,9 +255,7 @@ class PengajuanService {
       print("UPLOAD BUKTI RESPONSE: ${res.data}");
 
       if (res.data['success'] != true) {
-        throw Exception(
-          res.data['message'] ?? "Gagal upload bukti pembayaran",
-        );
+        throw Exception(res.data['message'] ?? "Gagal upload bukti pembayaran");
       }
     } catch (e) {
       print("ERROR UPLOAD BUKTI: $e");
@@ -290,14 +264,18 @@ class PengajuanService {
   }
 
   // ================= AKTIVASI =================
-  Future<bool> aktivasiPengajuan(int id) async {
+  Future<void> aktivasiDomain(int id) async {
     try {
-      final res = await dio.post("${ApiConfig.aktivasi}/$id");
+      final res = await dio.post(
+        "${ApiConfig.baseUrl}/admin/aktivasi/proses/$id",
+      );
 
-      return res.data['success'] == true;
+      if (res.data['success'] != true) {
+        throw Exception(res.data['message'] ?? "Gagal aktivasi");
+      }
     } catch (e) {
       print("ERROR AKTIVASI: $e");
-      return false;
+      throw Exception("Gagal aktivasi");
     }
   }
 }

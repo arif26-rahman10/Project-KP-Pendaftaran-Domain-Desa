@@ -89,6 +89,18 @@ class AdminDomainMenu extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
+                  // ================= Daftar domain ak=================
+                  _menuCard(
+                    icon: Icons.assignment_outlined,
+                    title: 'Domain Terdaftar',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const DomainPage()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 30),
 
                   // ================= PENGAJUAN =================
                   _menuCard(
@@ -107,7 +119,7 @@ class AdminDomainMenu extends StatelessWidget {
                   // ================= PERPANJANGAN =================
                   _menuCard(
                     icon: Icons.update,
-                    title: 'Perpanjangan Domain',
+                    title: 'Pengajuan Perpanjangan',
                     onTap: () {
                       Navigator.push(
                         context,

@@ -17,6 +17,7 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
 
   String selectedStatus = '';
   final TextEditingController catatan = TextEditingController();
+
   bool isLoading = false;
   bool sudahSetStatusAwal = false;
 
@@ -38,6 +39,38 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
     });
 
     debugPrint("STATUS DIPILIH: $selectedStatus");
+  }
+
+  Future<bool> showKonfirmasi(String pesan) async {
+    return await showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text("Konfirmasi"),
+            content: Text(pesan),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, false);
+                },
+                child: const Text("Batal"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                child: const Text("Ya, Saya Yakin"),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   Future<void> kirimVerifikasi(Pengajuan item) async {
@@ -90,10 +123,36 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
     }
   }
 
+  Future<void> aktivasiDomain(int id) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      await PengajuanService().aktivasiDomain(id);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Domain berhasil diaktifkan")),
+      );
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal aktivasi: $e")));
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    debugPrint("DETAIL DOMAIN PAGE DIPAKAI");
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Detail Pengajuan"),
@@ -123,6 +182,7 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
             child: Column(
               children: [
                 _sectionTitle("Informasi Instansi"),
+
                 _infoTile("Nama Instansi", item.namaDesa),
                 _infoTile("Nama Domain", item.domain),
                 _infoTile("Tanggal", item.tanggal),
@@ -131,18 +191,23 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
                 const SizedBox(height: 10),
 
                 _sectionTitle("Dokumen Persyaratan"),
+
                 _fileTile("Surat Permohonan", "surat_permohonan", item),
+
                 _fileTile(
                   "Perda Pembentukan Desa",
                   "perda_pembentukan_desa",
                   item,
                 ),
+
                 _fileTile("Surat Kuasa", "surat_kuasa", item),
+
                 _fileTile(
                   "Surat Penunjukan Pejabat",
                   "surat_penunjukan_pejabat",
                   item,
                 ),
+
                 _fileTile("KTP ASN Pejabat", "ktp_asn_pejabat", item),
 
                 const SizedBox(height: 20),
@@ -161,19 +226,28 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       color: Colors.red,
-      child: Text(title, style: const TextStyle(color: Colors.white)),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
   Widget _infoTile(String label, String value) {
     return ListTile(
       title: Text(label, style: const TextStyle(color: Colors.blue)),
-      trailing: Text(value.isEmpty ? "-" : value),
+      trailing: Flexible(
+        child: Text(value.isEmpty ? "-" : value, textAlign: TextAlign.end),
+      ),
     );
   }
 
   Widget _fileTile(String title, String type, Pengajuan item) {
     final url = item.dokumenUrls[type];
+
     final isAvailable = url != null && url.isNotEmpty;
 
     return ListTile(
@@ -207,14 +281,51 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
         children: [
           const Text(
             "Hasil Verifikasi",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
-          const SizedBox(height: 10),
+
+          const SizedBox(height: 16),
 
           if (item.status == 'aktif') ...[
+            const Center(
+              child: Text(
+                "Domain sudah aktif dan tidak dapat diubah",
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ] else if (item.status == 'menunggu_aktivasi') ...[
             const Text(
-              "Domain sudah aktif dan tidak dapat diubah",
-              style: TextStyle(color: Colors.green),
+              "Domain siap diaktifkan",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 20),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        final ok = await showKonfirmasi(
+                          "Apakah Anda yakin ingin mengaktifkan domain ini?",
+                        );
+
+                        if (ok) {
+                          await aktivasiDomain(item.id);
+                        }
+                      },
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text("Aktifkan Domain"),
+              ),
             ),
           ] else ...[
             InkWell(
@@ -233,7 +344,7 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
                             }
                           },
                   ),
-                  const Expanded(child: Text("Diproses")),
+                  const Expanded(child: Text("Disetujui")),
                 ],
               ),
             ),
@@ -279,7 +390,17 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
                 ),
-                onPressed: isLoading ? null : () => kirimVerifikasi(item),
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        final ok = await showKonfirmasi(
+                          "Apakah anda yakin ingin mengirim verifikasi ini?",
+                        );
+
+                        if (ok) {
+                          kirimVerifikasi(item);
+                        }
+                      },
                 child: isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text("Kirim"),
@@ -295,12 +416,19 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
     switch (status) {
       case 'ditinjau':
         return "Menunggu Verifikasi";
+
       case 'diproses':
         return "Sedang Diproses";
+
       case 'perlu_perbaikan':
         return "Perlu Perbaikan";
+
+      case 'menunggu_aktivasi':
+        return "Menunggu Aktivasi";
+
       case 'aktif':
         return "Domain Aktif";
+
       default:
         return status;
     }
