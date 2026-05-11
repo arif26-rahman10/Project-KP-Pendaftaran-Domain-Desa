@@ -41,9 +41,11 @@ class _FakturPageState extends State<FakturPage> {
 
     setState(() {
       listFaktur = data.where((item) {
-        return item.status == 'diproses' ||
-            item.status == 'menunggu_aktivasi' ||
-            item.status == 'aktif';
+        // HARUS PUNYA FAKTUR
+        final punyaFaktur =
+            item.noInvoice.isNotEmpty || item.fakturStatus.isNotEmpty;
+
+        return punyaFaktur;
       }).toList();
 
       isLoading = false;

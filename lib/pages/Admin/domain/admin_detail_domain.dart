@@ -15,16 +15,27 @@ class DetailDomainPage extends StatefulWidget {
 class _DetailDomainPageState extends State<DetailDomainPage> {
   late Future<Pengajuan> detailFuture;
 
-  String selectedStatus = '';
   final TextEditingController catatan = TextEditingController();
 
+  String selectedStatus = '';
   bool isLoading = false;
-  bool sudahSetStatusAwal = false;
+  bool sudahInitStatus = false;
 
   @override
   void initState() {
     super.initState();
+    loadDetail();
+  }
+
+  void loadDetail() {
     detailFuture = PengajuanService().getDetail(widget.data.id);
+  }
+
+  Future<void> refreshPage() async {
+    setState(() {
+      sudahInitStatus = false;
+      loadDetail();
+    });
   }
 
   @override
@@ -33,12 +44,14 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
     super.dispose();
   }
 
-  void pilihStatus(String status) {
-    setState(() {
-      selectedStatus = status;
-    });
+  String normalize(String value) {
+    return value.trim().toLowerCase();
+  }
 
-    debugPrint("STATUS DIPILIH: $selectedStatus");
+  void pilihStatus(String value) {
+    setState(() {
+      selectedStatus = value;
+    });
   }
 
   Future<bool> showKonfirmasi(String pesan) async {
@@ -52,9 +65,7 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
             content: Text(pesan),
             actions: [
               TextButton(
-                onPressed: () {
-                  Navigator.pop(context, false);
-                },
+                onPressed: () => Navigator.pop(context, false),
                 child: const Text("Batal"),
               ),
               ElevatedButton(
@@ -62,10 +73,8 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                 ),
-                onPressed: () {
-                  Navigator.pop(context, true);
-                },
-                child: const Text("Ya, Saya Yakin"),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Ya"),
               ),
             ],
           ),
@@ -81,18 +90,14 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
       return;
     }
 
-    if (selectedStatus == "perlu_perbaikan" && catatan.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Catatan wajib diisi jika perlu perbaikan"),
-        ),
-      );
+    if (selectedStatus == 'perlu_perbaikan' && catatan.text.trim().isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Catatan wajib diisi")));
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     try {
       await PengajuanService().verifikasiPengajuan(
@@ -105,9 +110,9 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Berhasil verifikasi")));
+      ).showSnackBar(const SnackBar(content: Text("Verifikasi berhasil")));
 
-      Navigator.pop(context, true);
+      await refreshPage();
     } catch (e) {
       if (!mounted) return;
 
@@ -116,17 +121,13 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
       ).showSnackBar(SnackBar(content: Text("Gagal: $e")));
     } finally {
       if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
+        setState(() => isLoading = false);
       }
     }
   }
 
   Future<void> aktivasiDomain(int id) async {
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     try {
       await PengajuanService().aktivasiDomain(id);
@@ -137,126 +138,77 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
         const SnackBar(content: Text("Domain berhasil diaktifkan")),
       );
 
-      Navigator.pop(context, true);
+      await refreshPage();
     } catch (e) {
+      if (!mounted) return;
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Gagal aktivasi: $e")));
     } finally {
       if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
+        setState(() => isLoading = false);
       }
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Detail Pengajuan"),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
-      ),
-      body: FutureBuilder<Pengajuan>(
-        future: detailFuture,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final item = snapshot.data!;
-
-          if (!sudahSetStatusAwal) {
-            if (item.status == "diproses" || item.status == "perlu_perbaikan") {
-              selectedStatus = item.status;
-            } else {
-              selectedStatus = "";
-            }
-
-            sudahSetStatusAwal = true;
-          }
-
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                _sectionTitle("Informasi Instansi"),
-
-                _infoTile("Nama Instansi", item.namaDesa),
-                _infoTile("Nama Domain", item.domain),
-                _infoTile("Tanggal", item.tanggal),
-                _infoTile("Status", _statusText(item.status)),
-
-                const SizedBox(height: 10),
-
-                _sectionTitle("Dokumen Persyaratan"),
-
-                _fileTile("Surat Permohonan", "surat_permohonan", item),
-
-                _fileTile(
-                  "Perda Pembentukan Desa",
-                  "perda_pembentukan_desa",
-                  item,
-                ),
-
-                _fileTile("Surat Kuasa", "surat_kuasa", item),
-
-                _fileTile(
-                  "Surat Penunjukan Pejabat",
-                  "surat_penunjukan_pejabat",
-                  item,
-                ),
-
-                _fileTile("KTP ASN Pejabat", "ktp_asn_pejabat", item),
-
-                const SizedBox(height: 20),
-
-                _verifikasiSection(item),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+  Color badgeColor(String status) {
+    switch (status) {
+      case 'aktif':
+        return Colors.green;
+      case 'menunggu_aktivasi':
+        return Colors.orange;
+      case 'diproses':
+        return Colors.blue;
+      case 'perlu_perbaikan':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
-  Widget _sectionTitle(String title) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      color: Colors.red,
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
+  String statusText(String status) {
+    switch (status) {
+      case 'ditinjau':
+        return "Menunggu Verifikasi";
+      case 'diproses':
+        return "Sedang Diproses";
+      case 'perlu_perbaikan':
+        return "Perlu Perbaikan";
+      case 'menunggu_aktivasi':
+        return "Menunggu Aktivasi";
+      case 'aktif':
+        return "Domain Aktif";
+      default:
+        return status;
+    }
   }
 
-  Widget _infoTile(String label, String value) {
+  Widget infoTile(String label, String value) {
     return ListTile(
-      title: Text(label, style: const TextStyle(color: Colors.blue)),
-      trailing: Flexible(
+      dense: true,
+      title: Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.blue),
+      ),
+      trailing: SizedBox(
+        width: 180,
         child: Text(value.isEmpty ? "-" : value, textAlign: TextAlign.end),
       ),
     );
   }
 
-  Widget _fileTile(String title, String type, Pengajuan item) {
-    final url = item.dokumenUrls[type];
-
-    final isAvailable = url != null && url.isNotEmpty;
+  Widget fileTile(String title, String key, Pengajuan item) {
+    final url = item.dokumenUrls[key];
+    final tersedia = url != null && url.isNotEmpty;
 
     return ListTile(
       title: Text(title),
       trailing: Text(
-        isAvailable ? "Lihat" : "Tidak ada",
-        style: TextStyle(color: isAvailable ? Colors.blue : Colors.grey),
+        tersedia ? "Lihat" : "Tidak Ada",
+        style: TextStyle(color: tersedia ? Colors.blue : Colors.grey),
       ),
-      onTap: isAvailable
+      onTap: tersedia
           ? () {
               Navigator.push(
                 context,
@@ -269,168 +221,258 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
     );
   }
 
-  Widget _verifikasiSection(Pengajuan item) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Color(0xfff5f5f5),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget buildVerifikasi(Pengajuan item) {
+    final status = normalize(item.status);
+
+    if (status == 'aktif') {
+      return const Center(
+        child: Text(
+          "Domain sudah aktif",
+          style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+
+    if (status == 'menunggu_aktivasi') {
+      return Column(
         children: [
           const Text(
-            "Hasil Verifikasi",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            "Domain siap diaktifkan",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange),
           ),
-
           const SizedBox(height: 16),
-
-          if (item.status == 'aktif') ...[
-            const Center(
-              child: Text(
-                "Domain sudah aktif dan tidak dapat diubah",
-                style: TextStyle(
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
               ),
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      final ok = await showKonfirmasi(
+                        "Aktifkan domain sekarang?",
+                      );
+
+                      if (ok) {
+                        await aktivasiDomain(item.id);
+                      }
+                    },
+              child: isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Aktifkan Domain"),
             ),
-          ] else if (item.status == 'menunggu_aktivasi') ...[
-            const Text(
-              "Domain siap diaktifkan",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 20),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        final ok = await showKonfirmasi(
-                          "Apakah Anda yakin ingin mengaktifkan domain ini?",
-                        );
-
-                        if (ok) {
-                          await aktivasiDomain(item.id);
-                        }
-                      },
-                child: isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Aktifkan Domain"),
-              ),
-            ),
-          ] else ...[
-            InkWell(
-              onTap: isLoading ? null : () => pilihStatus("diproses"),
-              child: Row(
-                children: [
-                  Radio<String>(
-                    value: "diproses",
-                    groupValue: selectedStatus,
-                    activeColor: Colors.red,
-                    onChanged: isLoading
-                        ? null
-                        : (value) {
-                            if (value != null) {
-                              pilihStatus(value);
-                            }
-                          },
-                  ),
-                  const Expanded(child: Text("Disetujui")),
-                ],
-              ),
-            ),
-
-            InkWell(
-              onTap: isLoading ? null : () => pilihStatus("perlu_perbaikan"),
-              child: Row(
-                children: [
-                  Radio<String>(
-                    value: "perlu_perbaikan",
-                    groupValue: selectedStatus,
-                    activeColor: Colors.red,
-                    onChanged: isLoading
-                        ? null
-                        : (value) {
-                            if (value != null) {
-                              pilihStatus(value);
-                            }
-                          },
-                  ),
-                  const Expanded(child: Text("Perlu Perbaikan")),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: catatan,
-              decoration: const InputDecoration(
-                hintText: "Catatan...",
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-
-            const SizedBox(height: 20),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        final ok = await showKonfirmasi(
-                          "Apakah anda yakin ingin mengirim verifikasi ini?",
-                        );
-
-                        if (ok) {
-                          kirimVerifikasi(item);
-                        }
-                      },
-                child: isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Kirim"),
-              ),
-            ),
-          ],
+          ),
         ],
+      );
+    }
+
+    if (status == 'ditinjau') {
+      return Column(
+        children: [
+          RadioListTile(
+            value: 'diproses',
+            groupValue: selectedStatus,
+            activeColor: Colors.red,
+            title: const Text("Disetujui"),
+            onChanged: isLoading ? null : (v) => pilihStatus(v.toString()),
+          ),
+          RadioListTile(
+            value: 'perlu_perbaikan',
+            groupValue: selectedStatus,
+            activeColor: Colors.red,
+            title: const Text("Perlu Perbaikan"),
+            onChanged: isLoading ? null : (v) => pilihStatus(v.toString()),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: catatan,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              hintText: "Catatan...",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      final ok = await showKonfirmasi(
+                        "Kirim hasil verifikasi?",
+                      );
+
+                      if (ok) {
+                        await kirimVerifikasi(item);
+                      }
+                    },
+              child: isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Kirim"),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Center(
+      child: Text(
+        statusText(status),
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.orange,
+        ),
       ),
     );
   }
 
-  String _statusText(String status) {
-    switch (status) {
-      case 'ditinjau':
-        return "Menunggu Verifikasi";
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Detail Pengajuan"),
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+      ),
+      body: RefreshIndicator(
+        onRefresh: refreshPage,
+        child: FutureBuilder<Pengajuan>(
+          future: detailFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-      case 'diproses':
-        return "Sedang Diproses";
+            if (snapshot.hasError) {
+              return ListView(
+                children: [
+                  const SizedBox(height: 100),
+                  Center(
+                    child: Text(
+                      "Terjadi kesalahan\n${snapshot.error}",
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              );
+            }
 
-      case 'perlu_perbaikan':
-        return "Perlu Perbaikan";
+            if (!snapshot.hasData) {
+              return ListView(
+                children: const [
+                  SizedBox(height: 100),
+                  Center(child: Text("Data tidak ditemukan")),
+                ],
+              );
+            }
 
-      case 'menunggu_aktivasi':
-        return "Menunggu Aktivasi";
+            final item = snapshot.data!;
+            final status = normalize(item.status);
 
-      case 'aktif':
-        return "Domain Aktif";
+            if (!sudahInitStatus) {
+              if (status == 'diproses' || status == 'perlu_perbaikan') {
+                selectedStatus = status;
+              } else {
+                selectedStatus = '';
+              }
 
-      default:
-        return status;
-    }
+              sudahInitStatus = true;
+            }
+
+            return ListView(
+              padding: const EdgeInsets.only(bottom: 24),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  color: Colors.red,
+                  child: const Text(
+                    "Informasi Instansi",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                infoTile("Nama Instansi", item.namaDesa),
+                infoTile("Nama Domain", item.domain),
+                infoTile("Tanggal", item.tanggal),
+
+                ListTile(
+                  title: const Text(
+                    "Status",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeColor(status),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      statusText(status),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  color: Colors.red,
+                  child: const Text(
+                    "Dokumen Persyaratan",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                fileTile("Surat Permohonan", "surat_permohonan", item),
+                fileTile(
+                  "Perda Pembentukan Desa",
+                  "perda_pembentukan_desa",
+                  item,
+                ),
+                fileTile("Surat Kuasa", "surat_kuasa", item),
+                fileTile(
+                  "Surat Penunjukan Pejabat",
+                  "surat_penunjukan_pejabat",
+                  item,
+                ),
+                fileTile("KTP ASN Pejabat", "ktp_asn_pejabat", item),
+
+                const SizedBox(height: 20),
+
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xfff5f5f5),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: buildVerifikasi(item),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
   }
 }

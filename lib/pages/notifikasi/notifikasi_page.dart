@@ -1,9 +1,71 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import '../../main.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../services/api_config.dart';
 import 'detail_notifikasi_page.dart';
 
-class NotifikasiPage extends StatelessWidget {
+class NotifikasiPage extends StatefulWidget {
   const NotifikasiPage({super.key});
+
+  @override
+  State<NotifikasiPage> createState() => _NotifikasiPageState();
+}
+
+class _NotifikasiPageState extends State<NotifikasiPage> {
+  List<dynamic> notifikasi = [];
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    getNotifikasi();
+  }
+
+  Future<String> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    return prefs.getString("token") ?? "";
+  }
+
+  Future<void> getNotifikasi() async {
+    try {
+      final token = await getToken();
+
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/notifikasi'),
+
+        headers: {
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      print("NOTIF STATUS: ${response.statusCode}");
+      print("NOTIF BODY: ${response.body}");
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          notifikasi = data['data'] ?? [];
+
+          isLoading = false;
+        });
+      } else {
+        throw Exception(data['message']);
+      }
+    } catch (e) {
+      print("NOTIF ERROR: $e");
+
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,140 +73,95 @@ class NotifikasiPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F2),
+
       body: Column(
         children: [
+          // ================= HEADER =================
           Container(
             width: double.infinity,
+
             padding: EdgeInsets.fromLTRB(16, topSafe + 10, 16, 14),
+
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFFE01925), Color(0xFF8E121A)],
+
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
             ),
+
             child: Row(
               children: [
                 InkWell(
-                  onTap: () => Navigator.pop(context),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+
+                  child: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
+
                 const SizedBox(width: 12),
+
                 const Text(
                   'Notifikasi',
+
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ),
+
+          // ================= CONTENT =================
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 20),
-              children: [
-                _notificationCard(
-                  context: context,
-                  title: 'Konfirmasi Pembayaran',
-                  subtitle:
-                      'Pengajuan domain xxx.desa.id telah disetujui.\nApakah Anda ingin melanjutkan proses pembayaran?\nJika ya, sistem akan membuatkan invoice pembayaran.',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DetailNotifikasiPage(
-                          title: 'Konfirmasi Pembayaran',
-                          message:
-                              'Pengajuan domain xxx.desa.id telah disetujui.\nApakah Anda ingin melanjutkan proses pembayaran?\n\nJika ya, sistem akan membuatkan invoice pembayaran.',
-                          leftButtonText: 'Tidak,\nBatalkan',
-                          rightButtonText: 'Ya, Lanjutkan Pembayaran',
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                _notificationCard(
-                  context: context,
-                  title: 'Masa Aktif Domain',
-                  subtitle:
-                      'Pemberitahuan: Masa aktif domain xxx.desa.id akan berakhir dalam 2 bulan.',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DetailNotifikasiPage(
-                          title: 'Masa Aktif Domain',
-                          message:
-                              'Pemberitahuan: Masa aktif domain xxx.desa.id akan berakhir dalam 2 bulan.\n\nSilakan lakukan perpanjangan domain sebelum masa berlaku habis agar domain tetap aktif.',
-                          leftButtonText: 'Nanti',
-                          rightButtonText: 'Perpanjang Sekarang',
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                _notificationCard(
-                  context: context,
-                  title: 'Faktur Baru',
-                  subtitle:
-                      'Anda memiliki faktur baru untuk domain xxx.desa.id.\nSilakan melakukan pembayaran sebelum batas waktu yang ditentukan agar proses aktivasi domain dapat dilanjutkan.',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DetailNotifikasiPage(
-                          title: 'Faktur Baru',
-                          message:
-                              'Anda memiliki faktur baru untuk domain xxx.desa.id.\n\nSilakan melakukan pembayaran sebelum batas waktu yang ditentukan agar proses aktivasi domain dapat dilanjutkan.',
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                _notificationCard(
-                  context: context,
-                  title: 'Aktivasi Domain',
-                  subtitle:
-                      'Domain xxx.desa.id telah berhasil diaktifkan.\nDomain sudah dapat digunakan dan masa aktif telah dimulai. Silakan cek detail domain pada menu domain Anda.',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DetailNotifikasiPage(
-                          title: 'Aktivasi Domain',
-                          message:
-                              'Domain xxx.desa.id telah berhasil diaktifkan.\n\nDomain sudah dapat digunakan dan masa aktif telah dimulai. Silakan cek detail domain pada menu domain Anda.',
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                _notificationCard(
-                  context: context,
-                  title: 'Perbaikan Dokumen',
-                  subtitle:
-                      'Dokumen pengajuan domain xxx.desa.id memerlukan perbaikan. Silakan melakukan revisi dokumen sesuai catatan yang diberikan agar proses pengajuan dapat dilanjutkan.',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DetailNotifikasiPage(
-                          title: 'Perbaikan Dokumen',
-                          message:
-                              'Dokumen pengajuan domain xxx.desa.id memerlukan perbaikan.\n\nSilakan melakukan revisi dokumen sesuai catatan yang diberikan agar proses pengajuan dapat dilanjutkan.',
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : notifikasi.isEmpty
+                ? const Center(child: Text("Belum ada notifikasi"))
+                : RefreshIndicator(
+                    onRefresh: getNotifikasi,
+
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+
+                      itemCount: notifikasi.length,
+
+                      itemBuilder: (context, index) {
+                        final item = notifikasi[index];
+
+                        return _notificationCard(
+                          title: item['judul'] ?? '-',
+
+                          subtitle: item['isi'] ?? '-',
+
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+
+                              MaterialPageRoute(
+                                builder: (_) => DetailNotifikasiPage(
+                                  title: item['judul'] ?? '-',
+
+                                  message: item['isi'] ?? '-',
+
+                                  idPengajuan: item['id_pengajuan'],
+                                ),
+                              ),
+                            );
+
+                            // refresh setelah buat faktur
+                            if (result == true) {
+                              getNotifikasi();
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -152,20 +169,25 @@ class NotifikasiPage extends StatelessWidget {
   }
 
   Widget _notificationCard({
-    required BuildContext context,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
   }) {
     return InkWell(
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(12),
+
       onTap: onTap,
+
       child: Container(
-        margin: const EdgeInsets.only(bottom: 18),
-        padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+        margin: const EdgeInsets.only(bottom: 16),
+
+        padding: const EdgeInsets.all(16),
+
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
+
+          borderRadius: BorderRadius.circular(14),
+
           boxShadow: const [
             BoxShadow(
               color: Colors.black12,
@@ -174,24 +196,26 @@ class NotifikasiPage extends StatelessWidget {
             ),
           ],
         ),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-              ),
+
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
+
             const SizedBox(height: 10),
+
             Text(
               subtitle,
+
               style: TextStyle(
                 fontSize: 13,
                 height: 1.5,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade700,
               ),
             ),
           ],

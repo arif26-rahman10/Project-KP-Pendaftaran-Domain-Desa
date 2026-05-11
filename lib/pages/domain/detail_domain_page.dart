@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../main.dart';
-import '../faktur/detail_faktur_page.dart';
 
 class DetailDomainPage extends StatelessWidget {
   final String namaDomain;
@@ -25,42 +24,72 @@ class DetailDomainPage extends StatelessWidget {
   });
 
   Color _statusColor() {
-    switch (status) {
-      case 'Aktif':
+    switch (status.toLowerCase()) {
+      case 'aktif':
         return const Color(0xFF69C17A);
-      case 'Menunggu Pembayaran':
+
+      case 'diproses':
         return const Color(0xFFE6671E);
-      case 'Nonaktif':
-        return const Color(0xFF8E8E94);
-      case 'Kadaluarsa':
-        return const Color(0xFF5C6B7A);
+
+      case 'perlu_perbaikan':
+        return const Color(0xFFD94C4C);
+
+      case 'menunggu_aktivasi':
+        return const Color(0xFF4B5BD7);
+
       default:
         return Colors.grey;
     }
   }
 
   double _statusWidth() {
-    switch (status) {
-      case 'Aktif':
+    switch (status.toLowerCase()) {
+      case 'aktif':
         return 62;
-      case 'Menunggu Pembayaran':
+
+      case 'diproses':
+        return 140;
+
+      case 'perlu_perbaikan':
         return 120;
-      case 'Nonaktif':
-        return 85;
-      case 'Kadaluarsa':
-        return 95;
+
+      case 'menunggu_aktivasi':
+        return 130;
+
       default:
-        return 80;
+        return 90;
     }
   }
 
   double _statusFontSize() {
-    if (status == 'Menunggu Pembayaran') return 10;
+    if (status.toLowerCase() == 'diproses') return 10;
     return 12;
   }
 
+  String get statusLabel {
+    switch (status.toLowerCase()) {
+      case 'ditinjau':
+        return 'Ditinjau';
+
+      case 'diproses':
+        return 'Menunggu Konfirmasi';
+
+      case 'perlu_perbaikan':
+        return 'Perlu Perbaikan';
+
+      case 'menunggu_aktivasi':
+        return 'Menunggu Aktivasi';
+
+      case 'aktif':
+        return 'Aktif';
+
+      default:
+        return status;
+    }
+  }
+
   Widget _buildStatusBadge() {
-    if (status == 'Aktif') {
+    if (status.toLowerCase() == 'aktif') {
       return Container(
         width: _statusWidth(),
         padding: const EdgeInsets.symmetric(vertical: 5),
@@ -88,7 +117,7 @@ class DetailDomainPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        status,
+        statusLabel,
         textAlign: TextAlign.center,
         style: TextStyle(color: Colors.white, fontSize: _statusFontSize()),
       ),
@@ -112,6 +141,7 @@ class DetailDomainPage extends StatelessWidget {
               ),
             ),
           ),
+
           Expanded(
             flex: 5,
             child: Padding(
@@ -135,88 +165,17 @@ class DetailDomainPage extends StatelessWidget {
     );
   }
 
-  Widget _aksiButton(BuildContext context) {
-    String text = '';
-    VoidCallback? onPressed;
-
-    if (status == 'Menunggu Pembayaran') {
-      text = 'Lihat Invoice';
-      onPressed = () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DetailFakturPage(
-              idPengajuan: 0,
-              fullName: 'Pengguna',
-              username: 'user',
-              invoiceNumber: 'INV-023',
-              tanggalTerbit: 'xx/xx/xxxx',
-              tanggalKadaluarsa: 'xx/xx/xxxx',
-              namaDomain: namaDomain,
-              jenisAplikasi: tipeAplikasi,
-              durasi: masaAktif,
-              harga: harga,
-            ),
-          ),
-        );
-      };
-    } else if (status == 'Kadaluarsa') {
-      text = 'Invoice Baru';
-      onPressed = () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DetailFakturPage(
-              idPengajuan: 0,
-              fullName: 'Pengguna',
-              username: 'user',
-              invoiceNumber: 'INV-024',
-              tanggalTerbit: 'xx/xx/xxxx',
-              tanggalKadaluarsa: 'xx/xx/xxxx',
-              namaDomain: namaDomain,
-              jenisAplikasi: 'Perpanjangan',
-              durasi: '1 Tahun',
-              harga: harga,
-            ),
-          ),
-        );
-      };
-    } else {
-      return const SizedBox.shrink();
-    }
-
-    return SizedBox(
-      height: 32,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFD94C4C),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-        ),
-        onPressed: onPressed,
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final topSafe = MediaQuery.of(context).padding.top;
-    final bool showAksi =
-        status == 'Menunggu Pembayaran' || status == 'Kadaluarsa';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
+
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ================= HEADER =================
           Container(
             width: double.infinity,
             padding: EdgeInsets.fromLTRB(16, topSafe + 10, 16, 14),
@@ -227,6 +186,7 @@ class DetailDomainPage extends StatelessWidget {
                 end: Alignment.bottomCenter,
               ),
             ),
+
             child: Row(
               children: [
                 InkWell(
@@ -237,7 +197,9 @@ class DetailDomainPage extends StatelessWidget {
                     size: 24,
                   ),
                 ),
+
                 const SizedBox(width: 12),
+
                 const Text(
                   'Detail Domain',
                   style: TextStyle(
@@ -249,9 +211,12 @@ class DetailDomainPage extends StatelessWidget {
               ],
             ),
           ),
+
+          // ================= CONTENT =================
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -263,19 +228,24 @@ class DetailDomainPage extends StatelessWidget {
                       color: Colors.black87,
                     ),
                   ),
+
                   const SizedBox(height: 18),
+
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                     ),
+
                     child: Column(
                       children: [
+                        // ================= TITLE =================
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 10,
                           ),
+
                           decoration: const BoxDecoration(
                             color: Color(0xFFAF252B),
                             borderRadius: BorderRadius.only(
@@ -283,6 +253,7 @@ class DetailDomainPage extends StatelessWidget {
                               topRight: Radius.circular(12),
                             ),
                           ),
+
                           child: const Text(
                             'Informasi Domain',
                             style: TextStyle(
@@ -292,6 +263,8 @@ class DetailDomainPage extends StatelessWidget {
                             ),
                           ),
                         ),
+
+                        // ================= TABLE =================
                         Container(
                           decoration: BoxDecoration(
                             color: const Color(0xFFF3F3F3),
@@ -301,45 +274,48 @@ class DetailDomainPage extends StatelessWidget {
                               bottomRight: Radius.circular(12),
                             ),
                           ),
+
                           child: Column(
                             children: [
                               _tableRow(
                                 title: 'Nama Domain',
                                 valueWidget: _textValue(namaDomain),
                               ),
+
                               _tableRow(
                                 title: 'Tipe Aplikasi',
                                 valueWidget: _textValue(tipeAplikasi),
                               ),
+
                               _tableRow(
                                 title: 'Status',
                                 valueWidget: _buildStatusBadge(),
                               ),
+
                               _tableRow(
                                 title: 'Masa Aktif',
                                 valueWidget: _textValue(masaAktif),
                               ),
+
                               _tableRow(
                                 title: 'Tanggal Kadaluarsa',
                                 valueWidget: _textValue(tanggalKadaluarsa),
                               ),
+
                               _tableRow(
                                 title: 'Harga',
                                 valueWidget: _textValue(harga),
                               ),
+
                               _tableRow(
                                 title: 'Detail Domain',
                                 valueWidget: _textValue(detailDomain),
                               ),
+
                               _tableRow(
                                 title: 'Bukti Pembayaran',
                                 valueWidget: _textValue(buktiPembayaran),
                               ),
-                              if (showAksi)
-                                _tableRow(
-                                  title: 'Aksi',
-                                  valueWidget: _aksiButton(context),
-                                ),
                             ],
                           ),
                         ),
