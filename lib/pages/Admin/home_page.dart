@@ -26,7 +26,6 @@ class AdminHomePage extends StatelessWidget {
     );
   }
 
-  // 🔴 HEADER
   Widget _buildHeader() {
     return Container(
       margin: const EdgeInsets.all(16),
@@ -42,7 +41,6 @@ class AdminHomePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🔔 Notifikasi
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -71,7 +69,6 @@ class AdminHomePage extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // 🔥 LOGO
           Center(
             child: Image.asset(
               'assets/images/logo_diskominfotik.png',
@@ -83,7 +80,6 @@ class AdminHomePage extends StatelessWidget {
     );
   }
 
-  // 📊 STATISTIK
   Widget _buildStats() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

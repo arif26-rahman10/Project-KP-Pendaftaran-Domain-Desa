@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../widgets/admin_bottom_nav.dart';
 import 'admin_domain_page.dart';
 import 'perpanjangan_domain_page.dart';
+import 'domain_terdaftar_page.dart';
 
 class AdminDomainMenu extends StatelessWidget {
   const AdminDomainMenu({super.key});
@@ -96,7 +97,9 @@ class AdminDomainMenu extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const DomainPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const DomainTerdaftarPage(),
+                        ),
                       );
                     },
                   ),

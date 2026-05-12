@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pages/admin/home_page.dart';
 import '../pages/admin/domain/admin_domain_menu.dart';
-import '../pages/admin/faktur_page.dart';
+import '../pages/admin/faktur/faktur_page.dart';
 import '../pages/admin/profile_page.dart';
 import '../services/local_auth_service.dart';
 
@@ -25,7 +25,7 @@ class AdminBottomNav extends StatelessWidget {
         break;
 
       case 2:
-        page = const FakturPage();
+        page = const AdminFakturPage();
         break;
 
       case 3:

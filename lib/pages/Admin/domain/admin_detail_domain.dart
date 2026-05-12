@@ -404,6 +404,26 @@ class _DetailDomainPageState extends State<DetailDomainPage> {
                 infoTile("Nama Instansi", item.namaDesa),
                 infoTile("Nama Domain", item.domain),
                 infoTile("Tanggal", item.tanggal),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  color: Colors.red,
+                  child: const Text(
+                    "Informasi Desa",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                infoTile("Telepon", item.telepon),
+                infoTile("Faksimili", item.faksimili),
+                infoTile("Alamat", item.alamat),
+                infoTile("Provinsi", item.provinsi),
+                infoTile("Kabupaten", item.kotaKabupaten),
+                infoTile("Kecamatan", item.kecamatan),
+                infoTile("Desa", item.desaKelurahan),
+                infoTile("Kode Pos", item.kodePos),
 
                 ListTile(
                   title: const Text(
