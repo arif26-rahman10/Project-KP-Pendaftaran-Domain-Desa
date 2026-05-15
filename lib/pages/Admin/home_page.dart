@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pendaftaran_domain_desa/pages/admin/notifikasi_page.dart';
 import '../../widgets/admin_bottom_nav.dart';
 
 class AdminHomePage extends StatelessWidget {
@@ -15,7 +16,7 @@ class AdminHomePage extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeader(),
+              _buildHeader(context),
               const SizedBox(height: 20),
               _buildStats(),
               const SizedBox(height: 20),
@@ -26,7 +27,7 @@ class AdminHomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
@@ -41,11 +42,20 @@ class AdminHomePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              SizedBox(),
-              Icon(Icons.notifications, color: Colors.white),
+              const SizedBox(),
+
+              IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NotifikasiPage()),
+                  );
+                },
+                icon: const Icon(Icons.notifications, color: Colors.white),
+              ),
             ],
           ),
 
@@ -101,6 +111,7 @@ class AdminHomePage extends StatelessWidget {
 }
 
 // ================= CARD =================
+
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
@@ -126,7 +137,9 @@ class StatCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 12),
           ),
+
           const SizedBox(height: 10),
+
           Text(
             value,
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),

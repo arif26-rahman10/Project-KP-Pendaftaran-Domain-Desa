@@ -1,13 +1,14 @@
 class ApiConfig {
   static const String baseUrl =
-      "https://3cd3-103-166-161-78.ngrok-free.app/api";
+      "https://2233-2001-448a-1041-ab10-18c5-54fb-fb40-3bfe.ngrok-free.app/api";
 
   static const String storageUrl =
-      "https://3cd3-103-166-161-78.ngrok-free.app/storage";
+      "https://2233-2001-448a-1041-ab10-18c5-54fb-fb40-3bfe.ngrok-free.app/storage";
 
   // AUTH
   static const String login = "/login";
   static const String register = "/register";
+  static const String notif = "/notifikasi";
 
   // PROFILE
   static const String profile = "/profile";
@@ -26,6 +27,7 @@ class ApiConfig {
   static const String getPengajuan = "/admin/pengajuan";
   static const String aktivasi = "/admin/aktivasi";
   static const String verifikasi = "/admin/verifikasi";
+  static const String adminNotif = "/admin/notifikasi";
 
   static String url(String endpoint) => baseUrl + endpoint;
 }
