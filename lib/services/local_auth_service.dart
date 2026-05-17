@@ -42,9 +42,7 @@ class LocalAuthService {
     };
   }
 
-  static Future<void> setLoginStatus({
-    required bool rememberMe,
-  }) async {
+  static Future<void> setLoginStatus({required bool rememberMe}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(keyIsLoggedIn, true);
     await prefs.setBool(keyRememberMe, rememberMe);

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../widgets/admin_bottom_nav.dart';
 import 'admin_domain_page.dart';
-import 'perpanjangan_domain_page.dart';
+import '../perpanjangan_page.dart';
 import 'domain_terdaftar_page.dart';
 
 class AdminDomainMenu extends StatelessWidget {

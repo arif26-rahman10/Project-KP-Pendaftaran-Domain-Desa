@@ -8,11 +8,7 @@ class HomePage extends StatelessWidget {
   final String fullName;
   final String username;
 
-  const HomePage({
-    super.key,
-    required this.fullName,
-    required this.username,
-  });
+  const HomePage({super.key, required this.fullName, required this.username});
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +57,7 @@ class HomePage extends StatelessWidget {
         children: [
           const Text(
             'Halo 👋',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 6),
           Text(
@@ -83,9 +76,7 @@ class HomePage extends StatelessWidget {
   Widget _buildPromoSection(BuildContext context) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -93,18 +84,12 @@ class HomePage extends StatelessWidget {
           children: [
             const Text(
               'Belum punya domain desa?',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'Segera daftarkan domain resmi untuk desamu sekarang juga!',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -114,9 +99,8 @@ class HomePage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => Step1CheckDomain(
-                        data: RegistrationData(),
-                      ),
+                      builder: (_) =>
+                          Step1CheckDomain(data: RegistrationData()),
                     ),
                   );
                 },
@@ -156,10 +140,7 @@ class HomePage extends StatelessWidget {
       children: [
         const Text(
           'Informasi',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         Card(
@@ -187,12 +168,7 @@ class HomePage extends StatelessWidget {
       children: [
         Icon(Icons.check_circle, color: kPrimary, size: 20),
         const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(fontSize: 14),
-          ),
-        ),
+        Expanded(child: Text(title, style: const TextStyle(fontSize: 14))),
       ],
     );
   }

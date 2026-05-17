@@ -69,27 +69,20 @@ class _LoginPageState extends State<LoginPage> {
           password: password,
         );
 
-        await LocalAuthService.setLoginStatus(
-          rememberMe: true,
-        );
+        await LocalAuthService.setLoginStatus(rememberMe: true);
 
         if (!mounted) return;
 
         if (role == 'admin') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (_) => const AdminHomePage(),
-            ),
+            MaterialPageRoute(builder: (_) => const AdminHomePage()),
           );
         } else if (role == 'desa') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => HomePage(
-                fullName: name,
-                username: uname,
-              ),
+              builder: (_) => HomePage(fullName: name, username: uname),
             ),
           );
         } else {
@@ -99,8 +92,8 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else {
         setState(() {
-          _errorMessage = result['message']?.toString() ??
-              'Username atau password salah';
+          _errorMessage =
+              result['message']?.toString() ?? 'Username atau password salah';
         });
       }
     } catch (e, stackTrace) {
@@ -181,10 +174,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 12),
                   const Text(
                     'Silakan login untuk melanjutkan',
-                    style: TextStyle(
-                      color: kPrimary,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: kPrimary, fontSize: 14),
                   ),
                   const SizedBox(height: 28),
 
@@ -195,9 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: BoxDecoration(
                         color: Colors.red.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Colors.red.withOpacity(0.3),
-                        ),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
                       ),
                       child: Row(
                         children: [
@@ -295,11 +283,7 @@ class _LoginPageState extends State<LoginPage> {
             left: 0,
             right: 0,
             bottom: 20,
-            child: SafeArea(
-              child: Center(
-                child: SupportLogo(),
-              ),
-            ),
+            child: SafeArea(child: Center(child: SupportLogo())),
           ),
         ],
       ),

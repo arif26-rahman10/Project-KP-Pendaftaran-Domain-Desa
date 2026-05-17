@@ -1,9 +1,9 @@
 class ApiConfig {
   static const String baseUrl =
-      "https://2233-2001-448a-1041-ab10-18c5-54fb-fb40-3bfe.ngrok-free.app/api";
+      "https://ff49-2001-448a-1041-2f82-f46a-786e-a9e8-f241.ngrok-free.app/api";
 
   static const String storageUrl =
-      "https://2233-2001-448a-1041-ab10-18c5-54fb-fb40-3bfe.ngrok-free.app/storage";
+      "https://ff49-2001-448a-1041-2f82-f46a-786e-a9e8-f241.ngrok-free.app/storage";
 
   // AUTH
   static const String login = "/login";

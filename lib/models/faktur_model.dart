@@ -7,6 +7,7 @@ class FakturModel {
   final String tipe;
   final String tanggal;
   final String buktiPembayaran;
+  final String expiredAt;
 
   FakturModel({
     required this.id,
@@ -17,6 +18,7 @@ class FakturModel {
     required this.tipe,
     required this.tanggal,
     required this.buktiPembayaran,
+    required this.expiredAt,
   });
 
   factory FakturModel.fromJson(Map<String, dynamic> json) {
@@ -36,6 +38,8 @@ class FakturModel {
       tanggal: json['tanggal_konfirmasi'] ?? '',
 
       buktiPembayaran: json['bukti_pembayaran'] ?? '',
+
+      expiredAt: json['expired_at'] ?? '',
     );
   }
 }

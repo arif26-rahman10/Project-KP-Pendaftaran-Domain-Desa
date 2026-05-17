@@ -142,7 +142,12 @@ class DetailVerifikasiPage extends StatelessWidget {
             _file("Surat Permohonan", item, "surat_permohonan", context),
             _file("Perda", item, "perda_pembentukan_desa", context),
             _file("Surat Kuasa", item, "surat_kuasa", context),
-            _file("Surat Penunjukan", item, "surat_penunjukan_pejabat", context),
+            _file(
+              "Surat Penunjukan",
+              item,
+              "surat_penunjukan_pejabat",
+              context,
+            ),
             _file("KTP ASN", item, "ktp_asn_pejabat", context),
 
             const SizedBox(height: 20),

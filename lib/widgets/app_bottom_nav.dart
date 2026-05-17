@@ -26,15 +26,19 @@ class AppBottomNav extends StatelessWidget {
       case 0:
         page = HomePage(fullName: fullName, username: username);
         break;
+
       case 1:
         page = DomainPage(fullName: fullName, username: username);
         break;
+
       case 2:
         page = FakturPage(fullName: fullName, username: username);
         break;
+
       case 3:
         page = ProfilePage(fullName: fullName, username: username);
         break;
+
       default:
         return;
     }
@@ -78,13 +82,6 @@ class AppBottomNav extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Colors.grey.shade200)),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, -2),
-          ),
-        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
