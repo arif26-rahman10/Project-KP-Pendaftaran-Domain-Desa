@@ -25,7 +25,6 @@ class MyApp extends StatelessWidget {
       title: 'Pendaftaran Domain Desa',
       theme: ThemeData(scaffoldBackgroundColor: kBg),
 
-      // 🔥 langsung tentukan halaman awal
       home: isLogin
           ? const SplashScreenPage() // nanti bisa ke Home
           : const SplashScreenPage(), // atau Login

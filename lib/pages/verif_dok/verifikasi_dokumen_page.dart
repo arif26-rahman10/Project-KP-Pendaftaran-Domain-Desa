@@ -15,7 +15,6 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
   List<Pengajuan> filteredList = [];
 
   bool isLoading = true;
-
   String search = "";
   String selectedFilter = "Semua";
 
@@ -27,7 +26,6 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
 
   Future<void> getData() async {
     setState(() => isLoading = true);
-
     final res = await PengajuanService().getPengajuanUser();
 
     setState(() {
@@ -39,14 +37,8 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
 
   void applyFilter() {
     filteredList = list.where((item) {
-      final matchSearch = item.domain.toLowerCase().contains(
-        search.toLowerCase(),
-      );
-
-      final matchFilter = selectedFilter == "Semua"
-          ? true
-          : item.status == selectedFilter;
-
+      final matchSearch = item.domain.toLowerCase().contains(search.toLowerCase());
+      final matchFilter = selectedFilter == "Semua" ? true : item.status == selectedFilter;
       return matchSearch && matchFilter;
     }).toList();
   }
@@ -63,7 +55,6 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
           ),
         ),
       ),
-
       body: Container(
         color: Colors.grey.shade100,
         child: RefreshIndicator(
@@ -73,7 +64,6 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
               : Column(
                   children: [
                     const SizedBox(height: 16),
-
                     // ================= SEARCH + FILTER =================
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -100,9 +90,7 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                               ),
                             ),
                           ),
-
                           const SizedBox(width: 10),
-
                           // FILTER
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -115,34 +103,13 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                               value: selectedFilter,
                               underline: const SizedBox(),
                               items: const [
-                                DropdownMenuItem(
-                                  value: "Semua",
-                                  child: Text("Type"),
-                                ),
-                                DropdownMenuItem(
-                                  value: "ditinjau",
-                                  child: Text("Ditinjau"),
-                                ),
-                                DropdownMenuItem(
-                                  value: "diproses",
-                                  child: Text("Diproses"),
-                                ),
-                                DropdownMenuItem(
-                                  value: "perlu_perbaikan",
-                                  child: Text("Perbaikan"),
-                                ),
-                                DropdownMenuItem(
-                                  value: "aktif",
-                                  child: Text("Domain Aktif"),
-                                ),
-                                DropdownMenuItem(
-                                  value: "menunggu_aktifasi",
-                                  child: Text("Menunggu Aktifasi"),
-                                ),
-                                DropdownMenuItem(
-                                  value: "draft",
-                                  child: Text("Draft"),
-                                ),
+                                DropdownMenuItem(value: "Semua", child: Text("Type")),
+                                DropdownMenuItem(value: "ditinjau", child: Text("Ditinjau")),
+                                DropdownMenuItem(value: "diproses", child: Text("Diproses")),
+                                DropdownMenuItem(value: "perlu_perbaikan", child: Text("Perbaikan")),
+                                DropdownMenuItem(value: "aktif", child: Text("Domain Aktif")),
+                                DropdownMenuItem(value: "menunggu_aktifasi", child: Text("Menunggu Aktifasi")),
+                                DropdownMenuItem(value: "draft", child: Text("Draft")),
                               ],
                               onChanged: (v) {
                                 setState(() {
@@ -155,9 +122,7 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
                     // ================= LIST =================
                     Expanded(
                       child: filteredList.isEmpty
@@ -167,7 +132,6 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                               itemCount: filteredList.length,
                               itemBuilder: (context, i) {
                                 final item = filteredList[i];
-
                                 return Container(
                                   margin: const EdgeInsets.only(bottom: 12),
                                   padding: const EdgeInsets.all(14),
@@ -194,40 +158,28 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                                           ),
                                         ),
                                       ),
-
                                       // STATUS
                                       _statusBadge(item.status),
-
                                       const SizedBox(width: 8),
-
-                                      // ACTION
+                                      // DETAIL
                                       IconButton(
-                                        icon: const Icon(
-                                          Icons.description,
-                                          color: Colors.blue,
-                                        ),
+                                        icon: const Icon(Icons.description, color: Colors.blue),
                                         onPressed: () async {
                                           await Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (_) =>
-                                                  DetailVerifikasiPage(
-                                                    data: item,
-                                                  ),
+                                              builder: (_) => DetailVerifikasiPage(data: item),
                                             ),
                                           );
                                           getData();
                                         },
                                       ),
-
+                                      // DELETE untuk draft
                                       if (item.status == 'draft')
                                         IconButton(
-                                          icon: const Icon(
-                                            Icons.delete,
-                                            color: Colors.red,
-                                          ),
+                                          icon: const Icon(Icons.delete, color: Colors.red),
                                           onPressed: () {
-                                            // TODO delete
+                                            // TODO: implement delete
                                           },
                                         ),
                                     ],
@@ -235,21 +187,6 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                                 );
                               },
                             ),
-                    ),
-
-                    // ================= PAGINATION =================
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _pageButton("1", true),
-                          const SizedBox(width: 8),
-                          _pageButton("2", false),
-                          const SizedBox(width: 8),
-                          _pageButton("...", false),
-                        ],
-                      ),
                     ),
                   ],
                 ),
@@ -302,21 +239,6 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
       child: Text(
         text,
         style: const TextStyle(color: Colors.white, fontSize: 12),
-      ),
-    );
-  }
-
-  // ================= PAGINATION =================
-  Widget _pageButton(String text, bool active) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: active ? Colors.red : Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(color: active ? Colors.white : Colors.black),
       ),
     );
   }

@@ -40,17 +40,14 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-
     nameController = TextEditingController(text: widget.fullName);
     emailController = TextEditingController();
     phoneController = TextEditingController();
-
     _loadProfile();
   }
 
   Future<void> _loadProfile() async {
     final user = await LocalAuthService.getRegisteredUser();
-
     setState(() {
       idUser = int.tryParse(user['id_user'].toString()) ?? 0;
       nameController.text = user['fullName'] ?? '';
@@ -58,18 +55,97 @@ class _ProfilePageState extends State<ProfilePage> {
       phoneController.text = user['phone'] ?? '';
       savedPassword = user['password'] ?? '';
     });
-
-    print("ID USER LOAD: $idUser");
   }
 
   Future<void> _logout() async {
     await LocalAuthService.logout();
-
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginPage()),
       (route) => false,
     );
+  }
+
+  // DIALOG KONFIRMASI LOGOUT
+  Future<void> _confirmLogout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true, // bisa klik luar untuk batal
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 10,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Konfirmasi',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 15),
+              const Text(
+                'Apakah Anda yakin ingin keluar dari aplikasi?',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.black54),
+              ),
+              const SizedBox(height: 25),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Tombol Batal
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade200,
+                      foregroundColor: Colors.black87,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Text(
+                      'Batal',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+
+                  // Tombol Ya, Keluar
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Text(
+                      'Ya, Keluar',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (shouldLogout == true) _logout();
   }
 
   Future<void> _saveProfile() async {
@@ -79,8 +155,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final oldPassword = oldPasswordController.text.trim();
     final newPassword = newPasswordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
-
-    print("ID USER: $idUser");
 
     try {
       final response = await http.post(
@@ -97,11 +171,7 @@ class _ProfilePageState extends State<ProfilePage> {
         },
       );
 
-      print("STATUS: ${response.statusCode}");
-      print("BODY: ${response.body}");
-
       final data = jsonDecode(response.body);
-
       if (data['success'] == true) {
         await LocalAuthService.saveRegisteredUser(
           idUser: idUser,
@@ -111,7 +181,6 @@ class _ProfilePageState extends State<ProfilePage> {
           phone: phone,
           password: newPassword.isEmpty ? savedPassword : newPassword,
         );
-
         await _loadProfile();
 
         if (!mounted) return;
@@ -129,8 +198,6 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       }
     } catch (e) {
-      print("ERROR: $e");
-
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Gagal koneksi server')));
@@ -145,7 +212,7 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: kBg,
       body: Column(
         children: [
-          // 🔴 HEADER
+          // HEADER
           Container(
             width: double.infinity,
             padding: EdgeInsets.fromLTRB(24, topSafe + 16, 24, 20),
@@ -193,8 +260,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-
-                // 👤 AVATAR
                 Container(
                   width: 80,
                   height: 80,
@@ -205,7 +270,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: const Icon(Icons.person, size: 50),
                 ),
                 const SizedBox(height: 10),
-
                 Text(
                   widget.username,
                   style: const TextStyle(
@@ -218,7 +282,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
 
-          // 📄 FORM
+          // FORM
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -280,6 +344,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       );
                     },
+                    withBorder: true,
                   ),
 
                   const SizedBox(height: 10),
@@ -288,7 +353,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.logout,
                     text: "Keluar",
                     color: Colors.red,
-                    onTap: _logout,
+                    onTap: _confirmLogout,
+                    withBorder: true,
                   ),
                 ],
               ),
@@ -296,7 +362,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-
       bottomNavigationBar: AppBottomNav(
         currentIndex: 3,
         fullName: nameController.text,
@@ -334,23 +399,40 @@ class _ProfilePageState extends State<ProfilePage> {
     required String text,
     required VoidCallback onTap,
     Color? color,
+    bool withBorder = false,
   }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
+          border: withBorder
+              ? Border.all(color: Colors.grey.shade300, width: 1)
+              : null,
+          boxShadow: withBorder
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
-            Icon(icon, color: color ?? Colors.black87),
+            Icon(icon, color: color ?? Colors.black87, size: 22),
             const SizedBox(width: 10),
             Text(
               text,
-              style: TextStyle(color: color ?? Colors.black87, fontSize: 14),
+              style: TextStyle(
+                color: color ?? Colors.black87,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),

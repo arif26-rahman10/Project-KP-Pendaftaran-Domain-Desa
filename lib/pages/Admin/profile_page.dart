@@ -35,16 +35,13 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   @override
   void initState() {
     super.initState();
-
     nameController = TextEditingController(text: widget.fullName);
     emailController = TextEditingController();
-
     _loadProfile();
   }
 
   Future<void> _loadProfile() async {
     final user = await LocalAuthService.getRegisteredUser();
-
     setState(() {
       idUser = int.tryParse(user['id_user'].toString()) ?? 0;
       nameController.text = user['fullName'] ?? '';
@@ -54,12 +51,87 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
   Future<void> _logout() async {
     await LocalAuthService.logout();
-
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginPage()),
       (route) => false,
     );
+  }
+
+  // 🔹 DIALOG KONFIRMASI LOGOUT MODERN
+  Future<void> _confirmLogout() async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 10,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.logout, size: 50, color: Colors.red),
+              const SizedBox(height: 10),
+              const Text(
+                'Konfirmasi',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 15),
+              const Text(
+                'Apakah Anda yakin ingin keluar dari aplikasi?',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.black54),
+              ),
+              const SizedBox(height: 25),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade200,
+                      foregroundColor: Colors.black87,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Text(
+                      'Batal',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Text(
+                      'Ya, Keluar',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (shouldLogout == true) _logout();
   }
 
   Future<void> _saveProfile() async {
@@ -101,9 +173,9 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
-
       body: Column(
         children: [
+          // HEADER
           Container(
             width: double.infinity,
             padding: EdgeInsets.fromLTRB(20, topSafe + 20, 20, 30),
@@ -132,9 +204,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   ),
                   child: const Icon(Icons.admin_panel_settings, size: 50),
                 ),
-
                 const SizedBox(height: 10),
-
                 Text(
                   widget.username,
                   style: const TextStyle(color: Colors.white70, fontSize: 14),
@@ -143,6 +213,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             ),
           ),
 
+          // FORM
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -152,9 +223,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                     _input(nameController, "Nama Lengkap"),
                     _input(emailController, "Email"),
                   ]),
-
                   const SizedBox(height: 16),
-
                   _cardField("Ubah Password", [
                     _input(oldPasswordController, "Password Lama", true),
                     _input(newPasswordController, "Password Baru", true),
@@ -164,7 +233,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       true,
                     ),
                   ]),
-
                   const SizedBox(height: 20),
 
                   // BUTTON SAVE
@@ -186,15 +254,14 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 12),
 
-                  // LOGOUT
+                  // BUTTON LOGOUT
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: OutlinedButton(
-                      onPressed: _logout,
+                      onPressed: _confirmLogout,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red,
                         side: const BorderSide(color: Colors.red),
@@ -211,7 +278,6 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
           ),
         ],
       ),
-
       bottomNavigationBar: const AdminBottomNav(currentIndex: 3),
     );
   }
