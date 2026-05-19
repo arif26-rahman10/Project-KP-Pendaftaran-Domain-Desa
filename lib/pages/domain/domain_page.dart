@@ -142,8 +142,8 @@ class _DomainPageState extends State<DomainPage> {
                   ),
                   const SizedBox(height: 30),
                   _domainCard(
-                    icon: Icons.update,
-                    title: 'Perpanjangan Domain',
+                    icon: Icons.language,
+                    title: 'Daftar Domain',
                     onTap: () {
                       Navigator.push(
                         context,
