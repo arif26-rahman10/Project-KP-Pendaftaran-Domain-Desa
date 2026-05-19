@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'users/login_page.dart';
+import '../services/local_auth_service.dart';
+import 'home_page.dart';
+import 'admin/home_page.dart';
 
 class SplashScreenPage extends StatefulWidget {
   const SplashScreenPage({super.key});
@@ -90,12 +93,41 @@ class _SplashScreenPageState extends State<SplashScreenPage>
     _mainController.forward();
 
     Timer(const Duration(seconds: 3), () {
-      if (!mounted) return;
+      checkSession();
+    });
+  }
+
+  Future<void> checkSession() async {
+    final isLoggedIn = await LocalAuthService.isLoggedIn();
+
+    if (!mounted) return;
+
+    if (isLoggedIn) {
+      final user = await LocalAuthService.getRegisteredUser();
+
+      final role = user['role'];
+      final fullName = user['fullName'];
+      final username = user['username'];
+
+      if (role == 'admin') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminHomePage()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HomePage(fullName: fullName, username: username),
+          ),
+        );
+      }
+    } else {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginPage()),
       );
-    });
+    }
   }
 
   @override

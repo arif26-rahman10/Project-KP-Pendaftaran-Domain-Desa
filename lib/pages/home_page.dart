@@ -3,6 +3,7 @@ import '../main.dart';
 import '../widgets/app_bottom_nav.dart';
 import './pendaftaran/step1_check_domain.dart';
 import '../services/registration_data.dart';
+import 'notifikasi/notifikasi_page.dart';
 
 class HomePage extends StatelessWidget {
   final String fullName;
@@ -16,15 +17,19 @@ class HomePage extends StatelessWidget {
       backgroundColor: kBg,
       body: Column(
         children: [
-          _buildHeader(fullName),
+          _buildHeader(context, fullName),
+
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildPromoSection(context),
+
                   const SizedBox(height: 16),
+
                   _buildInfoSection(),
                 ],
               ),
@@ -32,6 +37,7 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
+
       bottomNavigationBar: AppBottomNav(
         currentIndex: 0,
         fullName: fullName,
@@ -40,26 +46,59 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(String name) {
+  Widget _buildHeader(BuildContext context, String name) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
+
       decoration: BoxDecoration(
         color: kPrimary,
+
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(25),
           bottomRight: Radius.circular(25),
         ),
       ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
+
         children: [
-          const Text(
-            'Halo 👋',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Halo 👋',
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+              ),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const NotifikasiPage()),
+                    );
+                  },
+
+                  icon: const Icon(
+                    Icons.notifications_none_rounded,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
+
+          const SizedBox(height: 8),
+
           Text(
             name,
             style: const TextStyle(

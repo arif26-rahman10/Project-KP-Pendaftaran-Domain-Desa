@@ -26,6 +26,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int idUser = 0;
+  String role = '';
 
   late TextEditingController nameController;
   late TextEditingController emailController;
@@ -48,17 +49,23 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _loadProfile() async {
     final user = await LocalAuthService.getRegisteredUser();
+
     setState(() {
       idUser = int.tryParse(user['id_user'].toString()) ?? 0;
+
+      role = user['role'] ?? '';
+
       nameController.text = user['fullName'] ?? '';
       emailController.text = user['email'] ?? '';
       phoneController.text = user['phone'] ?? '';
-      savedPassword = user['password'] ?? '';
     });
   }
 
   Future<void> _logout() async {
     await LocalAuthService.logout();
+
+    if (!mounted) return;
+
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -179,7 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
           username: widget.username,
           email: email,
           phone: phone,
-          password: newPassword.isEmpty ? savedPassword : newPassword,
+          role: role,
         );
         await _loadProfile();
 

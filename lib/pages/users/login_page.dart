@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
           username: uname,
           email: email,
           phone: phone,
-          password: password,
+          role: role,
         );
 
         await LocalAuthService.setLoginStatus(rememberMe: true);

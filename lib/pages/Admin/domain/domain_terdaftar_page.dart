@@ -36,7 +36,13 @@ class _DomainTerdaftarPageState extends State<DomainTerdaftarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Domain Terdaftar")),
+      backgroundColor: const Color(0xfff5f7fb),
+
+      appBar: AppBar(
+        title: const Text("Domain Terdaftar"),
+        elevation: 0,
+        centerTitle: true,
+      ),
 
       body: FutureBuilder<List<DomainTerdaftar>>(
         future: future,
@@ -47,65 +53,142 @@ class _DomainTerdaftarPageState extends State<DomainTerdaftarPage> {
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text(snapshot.error.toString()));
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
+                style: const TextStyle(fontSize: 16),
+              ),
+            );
           }
 
           final data = snapshot.data ?? [];
 
           if (data.isEmpty) {
-            return const Center(child: Text("Tidak ada data"));
+            return const Center(
+              child: Text("Tidak ada data", style: TextStyle(fontSize: 16)),
+            );
           }
 
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          return Padding(
+            padding: const EdgeInsets.all(16),
 
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text("Desa")),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
 
-                DataColumn(label: Text("Domain")),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
 
-                DataColumn(label: Text("Status")),
+                child: Scrollbar(
+                  thumbVisibility: true,
 
-                DataColumn(label: Text("Expired")),
-              ],
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
 
-              rows: data.map((item) {
-                return DataRow(
-                  cells: [
-                    DataCell(Text(item.namaDesa)),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
 
-                    DataCell(Text("${item.namaDomain}.desa.id")),
-
-                    DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
+                      child: DataTable(
+                        headingRowColor: MaterialStateProperty.all(
+                          Colors.blue.shade50,
                         ),
 
-                        decoration: BoxDecoration(
-                          color: statusColor(item.status).withOpacity(.15),
+                        dataRowMinHeight: 65,
+                        dataRowMaxHeight: 70,
 
-                          borderRadius: BorderRadius.circular(20),
+                        columnSpacing: 40,
+
+                        headingTextStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          fontSize: 14,
                         ),
 
-                        child: Text(
-                          item.status,
+                        columns: const [
+                          DataColumn(label: Text("Desa")),
 
-                          style: TextStyle(
-                            color: statusColor(item.status),
+                          DataColumn(label: Text("Domain")),
 
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                          DataColumn(label: Text("Status")),
+
+                          DataColumn(label: Text("Expired")),
+                        ],
+
+                        rows: data.map((item) {
+                          return DataRow(
+                            cells: [
+                              DataCell(
+                                Text(
+                                  item.namaDesa,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+
+                              DataCell(
+                                Text(
+                                  "${item.namaDomain}.desa.id",
+                                  style: const TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+
+                              DataCell(
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 6,
+                                  ),
+
+                                  decoration: BoxDecoration(
+                                    color: statusColor(
+                                      item.status,
+                                    ).withOpacity(.15),
+
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+
+                                  child: Text(
+                                    item.status.toUpperCase(),
+
+                                    style: TextStyle(
+                                      color: statusColor(item.status),
+
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              DataCell(
+                                Text(
+                                  item.masaBerlaku,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
                       ),
                     ),
-
-                    DataCell(Text(item.masaBerlaku)),
-                  ],
-                );
-              }).toList(),
+                  ),
+                ),
+              ),
             ),
           );
         },

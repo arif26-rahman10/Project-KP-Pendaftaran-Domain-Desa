@@ -24,6 +24,8 @@ class AdminProfilePage extends StatefulWidget {
 
 class _AdminProfilePageState extends State<AdminProfilePage> {
   int idUser = 0;
+  String role = '';
+  String username = '';
 
   late TextEditingController nameController;
   late TextEditingController emailController;
@@ -42,8 +44,13 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
   Future<void> _loadProfile() async {
     final user = await LocalAuthService.getRegisteredUser();
+
     setState(() {
       idUser = int.tryParse(user['id_user'].toString()) ?? 0;
+
+      role = user['role'] ?? '';
+      username = user['username'] ?? '';
+
       nameController.text = user['fullName'] ?? '';
       emailController.text = user['email'] ?? '';
     });
@@ -51,6 +58,9 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
   Future<void> _logout() async {
     await LocalAuthService.logout();
+
+    if (!mounted) return;
+
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -152,6 +162,19 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
       final data = jsonDecode(response.body);
 
       if (data['success'] == true) {
+        await LocalAuthService.saveRegisteredUser(
+          idUser: idUser,
+          fullName: nameController.text,
+          username: username,
+          email: emailController.text,
+          phone: '',
+          role: role,
+        );
+        oldPasswordController.clear();
+        newPasswordController.clear();
+        confirmPasswordController.clear();
+
+        if (!mounted) return;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(data['message'])));

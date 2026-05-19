@@ -6,7 +6,7 @@ class LocalAuthService {
   static const String keyUsername = 'username';
   static const String keyEmail = 'email';
   static const String keyPhone = 'phone';
-  static const String keyPassword = 'password';
+  static const String keyRole = 'role';
 
   static const String keyIsLoggedIn = 'is_logged_in';
   static const String keyRememberMe = 'remember_me';
@@ -17,7 +17,7 @@ class LocalAuthService {
     required String username,
     required String email,
     required String phone,
-    String password = '',
+    required String role,
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -26,7 +26,7 @@ class LocalAuthService {
     await prefs.setString(keyUsername, username);
     await prefs.setString(keyEmail, email);
     await prefs.setString(keyPhone, phone);
-    await prefs.setString(keyPassword, password);
+    await prefs.setString(keyRole, role);
   }
 
   static Future<Map<String, dynamic>> getRegisteredUser() async {
@@ -38,19 +38,21 @@ class LocalAuthService {
       'username': prefs.getString(keyUsername) ?? '',
       'email': prefs.getString(keyEmail) ?? '',
       'phone': prefs.getString(keyPhone) ?? '',
-      'password': prefs.getString(keyPassword) ?? '',
+      'role': prefs.getString(keyRole) ?? '',
     };
   }
 
   static Future<void> setLoginStatus({required bool rememberMe}) async {
     final prefs = await SharedPreferences.getInstance();
+
     await prefs.setBool(keyIsLoggedIn, true);
     await prefs.setBool(keyRememberMe, rememberMe);
   }
 
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(keyIsLoggedIn, false);
+
+    await prefs.clear();
   }
 
   static Future<bool> isLoggedIn() async {
@@ -64,11 +66,13 @@ class LocalAuthService {
 
   static Future<bool> getRememberMe() async {
     final prefs = await SharedPreferences.getInstance();
+
     return prefs.getBool(keyRememberMe) ?? false;
   }
 
   static Future<void> setRememberMe(bool value) async {
     final prefs = await SharedPreferences.getInstance();
+
     await prefs.setBool(keyRememberMe, value);
   }
 }

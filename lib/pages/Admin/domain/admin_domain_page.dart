@@ -33,7 +33,7 @@ class _DomainPageState extends State<DomainPage> {
     res.sort((a, b) => b.id.compareTo(a.id));
 
     setState(() {
-      list = res;
+      list = res.where((e) => e.status != 'aktif').toList();
       isLoading = false;
     });
   }
@@ -72,7 +72,6 @@ class _DomainPageState extends State<DomainPage> {
                   _filterChip("Ditinjau", "ditinjau"),
                   _filterChip("Diproses", "diproses"),
                   _filterChip("Perbaikan", "perlu_perbaikan"),
-                  _filterChip("Aktif", "aktif"),
                 ],
               ),
             ),
