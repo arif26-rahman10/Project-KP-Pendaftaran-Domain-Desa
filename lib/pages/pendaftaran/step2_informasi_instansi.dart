@@ -9,8 +9,13 @@ import 'step3_persyaratan_domain.dart';
 
 class Step2InformasiInstansi extends StatefulWidget {
   final RegistrationData data;
+  final int idUser;
 
-  const Step2InformasiInstansi({super.key, required this.data});
+  const Step2InformasiInstansi({
+    super.key,
+    required this.idUser,
+    required this.data,
+  });
 
   @override
   State<Step2InformasiInstansi> createState() => _Step2InformasiInstansiState();
@@ -137,7 +142,8 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => Step3PersyaratanDomain(data: widget.data),
+          builder: (_) =>
+              Step3PersyaratanDomain(idUser: widget.idUser, data: widget.data),
         ),
       );
     }
@@ -156,17 +162,38 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _input(namaDesaController, "Nama Desa", true),
+              _input(
+                namaDesaController,
+                "Nama Organisasi",
+                true,
+                hintText: "Pemerintah Desa Sungai Pakning",
+              ),
+
               _input(
                 teleponController,
                 "Telepon",
                 true,
                 keyboardType: TextInputType.phone,
+                hintText: "0812xxxxxxxx",
               ),
-              _input(faksimiliController, "Faksimili", false),
-              _input(alamatController, "Alamat", true, maxLines: 3),
+
+              _input(
+                faksimiliController,
+                "Faksimili",
+                false,
+                hintText: "(0766) 123456",
+              ),
+
+              _input(
+                alamatController,
+                "Alamat",
+                true,
+                maxLines: 3,
+                hintText: "Jl. Jenderal Sudirman No. 10",
+              ),
 
               _readonlyField("Provinsi", selectedProvinsi),
+
               _readonlyField("Kabupaten", selectedKabupaten),
 
               // ================= KECAMATAN SEARCH =================
@@ -180,10 +207,17 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
                             .toList(),
                         selectedItem: selectedKecamatan,
                         popupProps: const PopupProps.menu(showSearchBox: true),
+
                         dropdownDecoratorProps: DropDownDecoratorProps(
-                          dropdownSearchDecoration: _decoration("Kecamatan"),
+                          dropdownSearchDecoration: _decoration(
+                            "Kecamatan",
+                            true,
+                            "Pilih Kecamatan",
+                          ),
                         ),
+
                         itemAsString: (item) => "Kec. ${formatNama(item)}",
+
                         onChanged: (v) {
                           setState(() {
                             selectedKecamatan = v;
@@ -198,6 +232,7 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
                             fetchDesa(selectedKecamatanId!);
                           });
                         },
+
                         validator: (v) => v == null ? "Wajib dipilih" : null,
                       ),
               ),
@@ -213,15 +248,23 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
                             .toList(),
                         selectedItem: selectedDesa,
                         popupProps: const PopupProps.menu(showSearchBox: true),
+
                         dropdownDecoratorProps: DropDownDecoratorProps(
-                          dropdownSearchDecoration: _decoration("Desa"),
+                          dropdownSearchDecoration: _decoration(
+                            "Desa",
+                            true,
+                            "Pilih Desa",
+                          ),
                         ),
+
                         itemAsString: (item) => formatNama(item),
+
                         onChanged: (v) {
                           setState(() {
                             selectedDesa = v;
                           });
                         },
+
                         validator: (v) => v == null ? "Wajib dipilih" : null,
                       ),
               ),
@@ -231,6 +274,7 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
                 "Kode Pos",
                 true,
                 keyboardType: TextInputType.number,
+                hintText: "28753",
               ),
             ],
           ),
@@ -247,6 +291,7 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
     bool required, {
     int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
+    String? hintText,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -254,7 +299,7 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        decoration: _decoration(label, required),
+        decoration: _decoration(label, required, hintText),
         validator: (v) {
           if (required && (v == null || v.isEmpty)) {
             return 'Wajib diisi';
@@ -276,8 +321,14 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
     );
   }
 
-  InputDecoration _decoration(String label, [bool required = true]) {
+  InputDecoration _decoration(
+    String label, [
+    bool required = true,
+    String? hintText,
+  ]) {
     return InputDecoration(
+      hintText: hintText,
+
       label: RichText(
         text: TextSpan(
           text: label,
@@ -292,6 +343,7 @@ class _Step2InformasiInstansiState extends State<Step2InformasiInstansi> {
               : [],
         ),
       ),
+
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
     );
   }

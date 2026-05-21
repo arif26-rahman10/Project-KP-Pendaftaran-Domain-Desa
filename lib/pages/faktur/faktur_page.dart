@@ -10,11 +10,16 @@ import '../users/profile_page.dart';
 import '../notifikasi/notifikasi_page.dart';
 
 class FakturPage extends StatefulWidget {
+  final int idUser;
   final String fullName;
   final String username;
 
-  const FakturPage({super.key, required this.fullName, required this.username});
-
+  const FakturPage({
+    super.key,
+    required this.idUser,
+    required this.fullName,
+    required this.username,
+  });
   @override
   State<FakturPage> createState() => _FakturPageState();
 }
@@ -59,16 +64,22 @@ class _FakturPageState extends State<FakturPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) =>
-              HomePage(fullName: widget.fullName, username: widget.username),
+          builder: (_) => HomePage(
+            idUser: widget.idUser,
+            fullName: widget.fullName,
+            username: widget.username,
+          ),
         ),
       );
     } else if (index == 1) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) =>
-              DomainPage(fullName: widget.fullName, username: widget.username),
+          builder: (_) => DomainPage(
+            idUser: widget.idUser,
+            fullName: widget.fullName,
+            username: widget.username,
+          ),
         ),
       );
     } else if (index == 2) {
@@ -102,6 +113,7 @@ class _FakturPageState extends State<FakturPage> {
           context,
           MaterialPageRoute(
             builder: (_) => DetailFakturPage(
+              idUser: widget.idUser,
               idPengajuan: item.id,
               fullName: widget.fullName,
               username: widget.username,

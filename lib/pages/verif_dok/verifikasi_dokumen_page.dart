@@ -4,8 +4,8 @@ import '../../services/pengajuan_service.dart';
 import 'detail_verifikasi_page.dart';
 
 class VerifikasiDokumenPage extends StatefulWidget {
-  const VerifikasiDokumenPage({super.key});
-
+  final int idUser;
+  const VerifikasiDokumenPage({super.key, required this.idUser});
   @override
   State<VerifikasiDokumenPage> createState() => _VerifikasiDokumenPageState();
 }
@@ -37,8 +37,12 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
 
   void applyFilter() {
     filteredList = list.where((item) {
-      final matchSearch = item.domain.toLowerCase().contains(search.toLowerCase());
-      final matchFilter = selectedFilter == "Semua" ? true : item.status == selectedFilter;
+      final matchSearch = item.domain.toLowerCase().contains(
+        search.toLowerCase(),
+      );
+      final matchFilter = selectedFilter == "Semua"
+          ? true
+          : item.status == selectedFilter;
       return matchSearch && matchFilter;
     }).toList();
   }
@@ -103,13 +107,34 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                               value: selectedFilter,
                               underline: const SizedBox(),
                               items: const [
-                                DropdownMenuItem(value: "Semua", child: Text("Type")),
-                                DropdownMenuItem(value: "ditinjau", child: Text("Ditinjau")),
-                                DropdownMenuItem(value: "diproses", child: Text("Diproses")),
-                                DropdownMenuItem(value: "perlu_perbaikan", child: Text("Perbaikan")),
-                                DropdownMenuItem(value: "aktif", child: Text("Domain Aktif")),
-                                DropdownMenuItem(value: "menunggu_aktifasi", child: Text("Menunggu Aktifasi")),
-                                DropdownMenuItem(value: "draft", child: Text("Draft")),
+                                DropdownMenuItem(
+                                  value: "Semua",
+                                  child: Text("Type"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "ditinjau",
+                                  child: Text("Ditinjau"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "diproses",
+                                  child: Text("Diproses"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "perlu_perbaikan",
+                                  child: Text("Perbaikan"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "aktif",
+                                  child: Text("Domain Aktif"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "menunggu_aktifasi",
+                                  child: Text("Menunggu Aktifasi"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "draft",
+                                  child: Text("Draft"),
+                                ),
                               ],
                               onChanged: (v) {
                                 setState(() {
@@ -163,12 +188,19 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                                       const SizedBox(width: 8),
                                       // DETAIL
                                       IconButton(
-                                        icon: const Icon(Icons.description, color: Colors.blue),
+                                        icon: const Icon(
+                                          Icons.description,
+                                          color: Colors.blue,
+                                        ),
                                         onPressed: () async {
                                           await Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (_) => DetailVerifikasiPage(data: item),
+                                              builder: (_) =>
+                                                  DetailVerifikasiPage(
+                                                    idUser: widget.idUser,
+                                                    data: item,
+                                                  ),
                                             ),
                                           );
                                           getData();
@@ -177,7 +209,10 @@ class _VerifikasiDokumenPageState extends State<VerifikasiDokumenPage> {
                                       // DELETE untuk draft
                                       if (item.status == 'draft')
                                         IconButton(
-                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
                                           onPressed: () {
                                             // TODO: implement delete
                                           },

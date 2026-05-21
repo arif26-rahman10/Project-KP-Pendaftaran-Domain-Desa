@@ -4,11 +4,13 @@ import 'package:http/http.dart' as http;
 
 import '../models/faktur_model.dart';
 import 'api_config.dart';
+import 'api_helper.dart';
 
 class FakturService {
   Future<List<FakturModel>> getData() async {
     final response = await http.get(
       Uri.parse('${ApiConfig.baseUrl}/admin/faktur'),
+      headers: await ApiHelper.headers(),
     );
 
     if (response.statusCode == 200) {
@@ -18,13 +20,16 @@ class FakturService {
 
       return data.map((e) => FakturModel.fromJson(e)).toList();
     } else {
-      throw Exception('Gagal mengambil faktur');
+      throw Exception(
+        'Gagal mengambil faktur : ${response.statusCode} - ${response.body}',
+      );
     }
   }
 
   Future<FakturModel> getDetail(int id) async {
     final response = await http.get(
       Uri.parse('${ApiConfig.baseUrl}/admin/faktur/$id'),
+      headers: await ApiHelper.headers(),
     );
 
     if (response.statusCode == 200) {
@@ -32,7 +37,9 @@ class FakturService {
 
       return FakturModel.fromJson(jsonData['data']);
     } else {
-      throw Exception('Gagal mengambil detail');
+      throw Exception(
+        'Gagal mengambil detail : ${response.statusCode} - ${response.body}',
+      );
     }
   }
 }

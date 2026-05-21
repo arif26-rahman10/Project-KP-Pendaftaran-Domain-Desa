@@ -371,6 +371,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       bottomNavigationBar: AppBottomNav(
         currentIndex: 3,
+        idUser: idUser,
         fullName: nameController.text,
         username: widget.username,
       ),

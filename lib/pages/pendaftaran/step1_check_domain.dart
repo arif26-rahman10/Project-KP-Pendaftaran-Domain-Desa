@@ -7,8 +7,9 @@ import '../../services/registration_data.dart';
 
 class Step1CheckDomain extends StatefulWidget {
   final RegistrationData data;
+  final int idUser;
 
-  const Step1CheckDomain({super.key, required this.data});
+  const Step1CheckDomain({super.key, required this.idUser, required this.data});
 
   @override
   State<Step1CheckDomain> createState() => _Step1CheckDomainState();
@@ -69,7 +70,10 @@ class _Step1CheckDomainState extends State<Step1CheckDomain> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => Step2InformasiInstansi(data: widget.data),
+              builder: (_) => Step2InformasiInstansi(
+                idUser: widget.idUser,
+                data: widget.data,
+              ),
             ),
           );
         },

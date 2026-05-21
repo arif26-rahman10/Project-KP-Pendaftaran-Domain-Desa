@@ -1,9 +1,9 @@
 class ApiConfig {
   static const String baseUrl =
-      "https://4e8f-103-166-161-78.ngrok-free.app/api";
+      "https://0a81-2001-448a-1041-8aed-e0a4-bce6-a7ae-3f5f.ngrok-free.app/api";
 
   static const String storageUrl =
-      "https://4e8f-103-166-161-78.ngrok-free.app/storage";
+      "https://0a81-2001-448a-1041-8aed-e0a4-bce6-a7ae-3f5f.ngrok-free.app/storage";
 
   // AUTH
   static const String login = "/login";
@@ -22,6 +22,19 @@ class ApiConfig {
   static const String submitPengajuan = "/pengajuan/submit";
   static const String getPengajuanUser = "/pengajuan/user";
   static const String checkDomain = "/pengajuan/check-domain";
+
+  // PERPANJANGAN
+  static const String listDomainAktif = "/perpanjangan/domain";
+  static const String ajukanPerpanjangan = "/perpanjangan/ajukan";
+
+  // USER
+  static const String lanjutkanPembayaranPerpanjangan =
+      "/perpanjangan/lanjutkan";
+
+  // ADMIN
+  static const String adminPerpanjangan = "/admin/perpanjangan";
+  static const String generateFakturPerpanjangan = "/admin/perpanjangan/faktur";
+  static const String aktivasiPerpanjangan = "/admin/perpanjangan/aktivasi";
 
   // ADMIN
   static const String getPengajuan = "/admin/pengajuan";

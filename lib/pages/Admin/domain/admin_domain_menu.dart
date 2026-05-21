@@ -127,7 +127,7 @@ class AdminDomainMenu extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const PerpanjanganDomainPage(),
+                          builder: (_) => const AdminPerpanjangPage(),
                         ),
                       );
                     },

@@ -26,15 +26,31 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   Future<void> loadDashboard() async {
-    final data = await DashboardService().getDashboard();
+    try {
+      final data = await DashboardService().getDashboard();
 
-    setState(() {
-      totalAktif = data['domain_aktif'] ?? 0;
-      totalPengajuan = data['tahap_proses'] ?? 0;
-      totalAktivasi = data['menunggu_aktivasi'] ?? 0;
-      totalVerifikasi = data['perlu_verifikasi'] ?? 0;
-      isLoading = false;
-    });
+      if (!mounted) return;
+
+      setState(() {
+        totalAktif = (data['domain_aktif'] ?? 0) as int;
+        totalPengajuan = (data['tahap_proses'] ?? 0) as int;
+        totalAktivasi = (data['menunggu_aktivasi'] ?? 0) as int;
+        totalVerifikasi = (data['perlu_verifikasi'] ?? 0) as int;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Dashboard error: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat dashboard: $e')));
+    }
   }
 
   @override

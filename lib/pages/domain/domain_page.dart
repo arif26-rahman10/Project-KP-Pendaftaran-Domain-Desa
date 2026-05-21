@@ -8,11 +8,15 @@ import '../../services/registration_data.dart';
 import '../verif_dok/verifikasi_dokumen_page.dart';
 
 class DomainPage extends StatefulWidget {
+  final int idUser;
   final String fullName;
   final String username;
-
-  const DomainPage({super.key, required this.fullName, required this.username});
-
+  const DomainPage({
+    super.key,
+    required this.idUser,
+    required this.fullName,
+    required this.username,
+  });
   @override
   State<DomainPage> createState() => _DomainPageState();
 }
@@ -134,8 +138,10 @@ class _DomainPageState extends State<DomainPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              Step1CheckDomain(data: RegistrationData()),
+                          builder: (_) => Step1CheckDomain(
+                            idUser: widget.idUser,
+                            data: RegistrationData(),
+                          ),
                         ),
                       );
                     },
@@ -148,7 +154,8 @@ class _DomainPageState extends State<DomainPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const DaftarDomainPage(),
+                          builder: (_) =>
+                              DaftarDomainPage(idUser: widget.idUser),
                         ),
                       );
                     },
@@ -164,7 +171,8 @@ class _DomainPageState extends State<DomainPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const VerifikasiDokumenPage(),
+                          builder: (_) =>
+                              VerifikasiDokumenPage(idUser: widget.idUser),
                         ),
                       );
                     },
@@ -180,6 +188,7 @@ class _DomainPageState extends State<DomainPage> {
       // Index 1 aktif karena ini halaman Domain
       bottomNavigationBar: AppBottomNav(
         currentIndex: 1,
+        idUser: widget.idUser,
         fullName: widget.fullName,
         username: widget.username,
       ),

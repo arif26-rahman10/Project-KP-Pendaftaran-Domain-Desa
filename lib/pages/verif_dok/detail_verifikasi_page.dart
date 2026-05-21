@@ -6,10 +6,14 @@ import '../faktur/detail_faktur_page.dart';
 import 'edit_pengajuan_page.dart';
 
 class DetailVerifikasiPage extends StatelessWidget {
+  final int idUser;
   final Pengajuan data;
 
-  const DetailVerifikasiPage({super.key, required this.data});
-
+  const DetailVerifikasiPage({
+    super.key,
+    required this.idUser,
+    required this.data,
+  });
   Future<void> _lanjutPembayaran(BuildContext context, Pengajuan item) async {
     final user = await LocalAuthService.getRegisteredUser();
 
@@ -46,6 +50,7 @@ class DetailVerifikasiPage extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (_) => DetailFakturPage(
                       idPengajuan: item.id,
+                      idUser: idUser,
                       fullName: fullName,
                       username: username,
                       invoiceNumber: "INV-${item.id}",

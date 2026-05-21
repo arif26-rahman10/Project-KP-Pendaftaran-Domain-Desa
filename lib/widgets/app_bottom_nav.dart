@@ -7,12 +7,14 @@ import '../pages/users/profile_page.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
+  final int idUser;
   final String fullName;
   final String username;
 
   const AppBottomNav({
     super.key,
     required this.currentIndex,
+    required this.idUser,
     required this.fullName,
     required this.username,
   });
@@ -24,15 +26,23 @@ class AppBottomNav extends StatelessWidget {
 
     switch (index) {
       case 0:
-        page = HomePage(fullName: fullName, username: username);
+        page = HomePage(idUser: idUser, fullName: fullName, username: username);
         break;
 
       case 1:
-        page = DomainPage(fullName: fullName, username: username);
+        page = DomainPage(
+          idUser: idUser,
+          fullName: fullName,
+          username: username,
+        );
         break;
 
       case 2:
-        page = FakturPage(fullName: fullName, username: username);
+        page = FakturPage(
+          idUser: idUser,
+          fullName: fullName,
+          username: username,
+        );
         break;
 
       case 3:

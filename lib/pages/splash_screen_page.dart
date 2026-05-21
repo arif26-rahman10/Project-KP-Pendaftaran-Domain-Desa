@@ -106,6 +106,7 @@ class _SplashScreenPageState extends State<SplashScreenPage>
       final user = await LocalAuthService.getRegisteredUser();
 
       final role = user['role'];
+      final idUser = user['id_user'];
       final fullName = user['fullName'];
       final username = user['username'];
 
@@ -118,7 +119,11 @@ class _SplashScreenPageState extends State<SplashScreenPage>
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => HomePage(fullName: fullName, username: username),
+            builder: (_) => HomePage(
+              idUser: idUser,
+              fullName: fullName,
+              username: username,
+            ),
           ),
         );
       }

@@ -6,10 +6,16 @@ import '../services/registration_data.dart';
 import 'notifikasi/notifikasi_page.dart';
 
 class HomePage extends StatelessWidget {
+  final int idUser;
   final String fullName;
   final String username;
 
-  const HomePage({super.key, required this.fullName, required this.username});
+  const HomePage({
+    super.key,
+    required this.idUser,
+    required this.fullName,
+    required this.username,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +28,6 @@ class HomePage extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
-
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -40,6 +45,7 @@ class HomePage extends StatelessWidget {
 
       bottomNavigationBar: AppBottomNav(
         currentIndex: 0,
+        idUser: idUser,
         fullName: fullName,
         username: username,
       ),
@@ -138,8 +144,10 @@ class HomePage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                          Step1CheckDomain(data: RegistrationData()),
+                      builder: (_) => Step1CheckDomain(
+                        idUser: idUser,
+                        data: RegistrationData(),
+                      ),
                     ),
                   );
                 },

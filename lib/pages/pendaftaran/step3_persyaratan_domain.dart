@@ -7,8 +7,13 @@ import 'pdf_preview_page.dart';
 
 class Step3PersyaratanDomain extends StatefulWidget {
   final RegistrationData data;
+  final int idUser;
 
-  const Step3PersyaratanDomain({super.key, required this.data});
+  const Step3PersyaratanDomain({
+    super.key,
+    required this.idUser,
+    required this.data,
+  });
 
   @override
   State<Step3PersyaratanDomain> createState() => _Step3PersyaratanDomainState();
@@ -101,7 +106,10 @@ class _Step3PersyaratanDomainState extends State<Step3PersyaratanDomain> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => Step4Pratinjau(data: widget.data)),
+      MaterialPageRoute(
+        builder: (_) =>
+            Step4Pratinjau(idUser: widget.idUser, data: widget.data),
+      ),
     );
   }
 

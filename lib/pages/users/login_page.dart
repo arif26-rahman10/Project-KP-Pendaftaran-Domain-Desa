@@ -81,7 +81,8 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => HomePage(fullName: name, username: uname),
+              builder: (_) =>
+                  HomePage(idUser: idUser, fullName: name, username: uname),
             ),
           );
         } else {

@@ -19,6 +19,7 @@ import 'faktur_page.dart';
 
 class DetailFakturPage extends StatefulWidget {
   final int idPengajuan;
+  final int idUser;
   final String fullName;
   final String username;
 
@@ -36,6 +37,7 @@ class DetailFakturPage extends StatefulWidget {
 
   const DetailFakturPage({
     super.key,
+    required this.idUser,
     required this.idPengajuan,
     required this.fullName,
     required this.username,
@@ -173,8 +175,11 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) =>
-              FakturPage(fullName: widget.fullName, username: widget.username),
+          builder: (_) => FakturPage(
+            idUser: widget.idUser,
+            fullName: widget.fullName,
+            username: widget.username,
+          ),
         ),
       );
     } catch (e) {
@@ -330,6 +335,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
 
       bottomNavigationBar: AppBottomNav(
         currentIndex: 2,
+        idUser: widget.idUser,
         fullName: widget.fullName,
         username: widget.username,
       ),

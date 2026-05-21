@@ -7,8 +7,9 @@ import '../verif_dok/verifikasi_dokumen_page.dart';
 
 class Step4Pratinjau extends StatefulWidget {
   final RegistrationData data;
+  final int idUser;
 
-  const Step4Pratinjau({super.key, required this.data});
+  const Step4Pratinjau({super.key, required this.idUser, required this.data});
 
   @override
   State<Step4Pratinjau> createState() => _Step4PratinjauState();
@@ -232,10 +233,12 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
                     ),
                     onPressed: () {
                       Navigator.pop(context);
+
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const VerifikasiDokumenPage(),
+                          builder: (_) =>
+                              VerifikasiDokumenPage(idUser: widget.idUser),
                         ),
                         (route) => false,
                       );

@@ -1,96 +1,218 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
-import '../models/domain_model.dart';
 import 'api_config.dart';
 import 'api_helper.dart';
 
 class PerpanjanganService {
-  // ================= USER LIST DOMAIN =================
-  static Future<List<DomainModel>> getDomain(int idUser) async {
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/perpanjangan/domain?id_user=$idUser'),
+  // =========================
+  // USER - GET DOMAIN AKTIF
+  // =========================
+  static Future<List> getDomainAktif() async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.url('/perpanjangan/domain')),
+        headers: await ApiHelper.headers(isJson: false),
+      );
 
-      headers: await ApiHelper.headers(isJson: false),
-    );
+      if (response.statusCode != 200) {
+        throw Exception('Gagal load domain');
+      }
 
-    print(response.statusCode);
-
-    print(response.body);
-
-    final data = jsonDecode(response.body);
-
-    List list = data['data'];
-
-    return list.map((e) => DomainModel.fromJson(e)).toList();
+      final data = jsonDecode(response.body);
+      return data['data'] ?? [];
+    } catch (e) {
+      print('Error getDomainAktif: $e');
+      rethrow;
+    }
   }
 
-  // ================= USER AJUKAN =================
-  static Future<bool> ajukanPerpanjangan(int id) async {
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/perpanjangan/ajukan/$id'),
+  // =========================
+  // USER - AJUKAN PERPANJANGAN
+  // =========================
+  static Future<Map<String, dynamic>> ajukanPerpanjangan(
+    int idPengajuan,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.url('/perpanjangan/ajukan/$idPengajuan')),
+        headers: await ApiHelper.headers(),
+      );
 
-      headers: await ApiHelper.headers(isJson: false),
-    );
-
-    print(response.statusCode);
-
-    print(response.body);
-
-    final data = jsonDecode(response.body);
-
-    return data['success'];
+      return jsonDecode(response.body);
+    } catch (e) {
+      print('Error ajukanPerpanjangan: $e');
+      rethrow;
+    }
   }
 
-  // ================= ADMIN LIST =================
-  static Future<List<dynamic>> adminList() async {
-    final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/admin/perpanjangan'),
+  // =========================
+  // USER - UPLOAD BUKTI PEMBAYARAN
+  // =========================
+  static Future<Map<String, dynamic>> uploadBuktiPembayaran({
+    required int idPengajuan,
+    required String filePath,
+  }) async {
+    try {
+      final headers = await ApiHelper.headers(isJson: false);
 
-      headers: await ApiHelper.headers(isJson: false),
-    );
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse(ApiConfig.url('/perpanjangan/upload-bukti/$idPengajuan')),
+      );
 
-    print(response.statusCode);
+      request.headers.addAll(headers);
 
-    print(response.body);
+      request.files.add(
+        await http.MultipartFile.fromPath('bukti_pembayaran', filePath),
+      );
 
-    final data = jsonDecode(response.body);
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
 
-    return data['data'];
+      return jsonDecode(responseBody);
+    } catch (e) {
+      print('Error uploadBuktiPembayaran: $e');
+      rethrow;
+    }
   }
 
-  // ================= GENERATE FAKTUR =================
-  static Future<bool> generateFaktur(int id) async {
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/admin/perpanjangan/faktur/$id'),
+  // =========================
+  // USER - GET DETAIL FAKTUR
+  // =========================
+  static Future<Map<String, dynamic>> getDetailFaktur(int idPengajuan) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.url('/perpanjangan/detail-faktur/$idPengajuan')),
+        headers: await ApiHelper.headers(),
+      );
 
-      headers: await ApiHelper.headers(isJson: false),
-    );
+      if (response.statusCode != 200) {
+        throw Exception('Faktur tidak ditemukan');
+      }
 
-    print(response.statusCode);
-
-    print(response.body);
-
-    final data = jsonDecode(response.body);
-
-    return data['success'];
+      return jsonDecode(response.body);
+    } catch (e) {
+      print('Error getDetailFaktur: $e');
+      rethrow;
+    }
   }
 
-  // ================= AKTIVASI =================
-  static Future<bool> aktivasi(int id) async {
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}/admin/perpanjangan/aktivasi/$id'),
+  // =========================
+  // USER - CEK REMINDER
+  // =========================
+  static Future<Map<String, dynamic>> cekReminder() async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.url('/perpanjangan/reminder')),
+        headers: await ApiHelper.headers(),
+      );
 
-      headers: await ApiHelper.headers(isJson: false),
-    );
+      return jsonDecode(response.body);
+    } catch (e) {
+      print('Error cekReminder: $e');
+      rethrow;
+    }
+  }
 
-    print(response.statusCode);
+  // =========================
+  // ADMIN - LIST REQUEST PERPANJANGAN
+  // =========================
+  static Future<List> getRequestPerpanjangan() async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.url('/admin/perpanjangan/list')),
+        headers: await ApiHelper.headers(isJson: false),
+      );
 
-    print(response.body);
+      if (response.statusCode != 200) {
+        throw Exception('Gagal mengambil data');
+      }
 
-    final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      return data['data'] ?? [];
+    } catch (e) {
+      print('Error getRequestPerpanjangan: $e');
+      rethrow;
+    }
+  }
 
-    return data['success'];
+  // =========================
+  // ADMIN - BUAT FAKTUR PERPANJANGAN
+  // =========================
+  static Future<Map<String, dynamic>> buatFaktur(int idPengajuan) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+          ApiConfig.url('/admin/perpanjangan/buat-faktur/$idPengajuan'),
+        ),
+        headers: await ApiHelper.headers(),
+      );
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      print('Error buatFaktur: $e');
+      rethrow;
+    }
+  }
+
+  // =========================
+  // ADMIN - VERIFIKASI PEMBAYARAN
+  // =========================
+  static Future<Map<String, dynamic>> verifikasiPembayaran(
+    int idPengajuan,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.url('/admin/perpanjangan/verifikasi/$idPengajuan')),
+        headers: await ApiHelper.headers(),
+      );
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      print('Error verifikasiPembayaran: $e');
+      rethrow;
+    }
+  }
+
+  // =========================
+  // ADMIN - AKTIVASI ULANG DOMAIN
+  // =========================
+  static Future<Map<String, dynamic>> aktivasiPerpanjangan(
+    int idPengajuan,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConfig.url('/admin/perpanjangan/aktivasi/$idPengajuan')),
+        headers: await ApiHelper.headers(),
+      );
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      print('Error aktivasiPerpanjangan: $e');
+      rethrow;
+    }
+  }
+
+  // =========================
+  // ADMIN - LIST FAKTUR PERPANJANGAN
+  // =========================
+  static Future<List> getListFaktur() async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConfig.url('/admin/perpanjangan/list-faktur')),
+        headers: await ApiHelper.headers(isJson: false),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Gagal mengambil data faktur');
+      }
+
+      final data = jsonDecode(response.body);
+      return data['data'] ?? [];
+    } catch (e) {
+      print('Error getListFaktur: $e');
+      rethrow;
+    }
   }
 }
