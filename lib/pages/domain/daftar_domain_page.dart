@@ -22,14 +22,21 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
     loadData();
   }
 
+  // =========================
+  // FORMAT TANGGAL
+  // =========================
+  String formatTanggal(String? value) {
+    if (value == null) return '-';
+
+    final date = DateTime.parse(value);
+
+    return "${date.day}-${date.month}-${date.year}";
+  }
+
   Future<void> loadData() async {
     try {
-      // Cek apakah widget masih mounted sebelum melakukan request
-      if (!mounted) return;
-
       final data = await PerpanjanganService.getDomainAktif();
 
-      // Cek lagi apakah widget masih mounted sebelum setState
       if (!mounted) return;
 
       setState(() {
@@ -37,21 +44,18 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
         loading = false;
       });
     } catch (e) {
-      // Cek mounted sebelum setState di error handler
       if (!mounted) return;
 
       setState(() {
         loading = false;
       });
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -59,6 +63,7 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Daftar Domain'), elevation: 0),
+
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : domains.isEmpty
@@ -71,45 +76,61 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
           : ListView.builder(
               itemCount: domains.length,
               padding: const EdgeInsets.all(8),
+
               itemBuilder: (context, index) {
                 final item = domains[index];
+
+                final masa = item['aktivasi_terakhir']?['masa_berlaku'];
 
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 6,
                   ),
+
                   elevation: 2,
+
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(12),
+
                     leading: Container(
                       width: 45,
                       height: 45,
+
                       decoration: BoxDecoration(
                         color: Colors.blue.withOpacity(0.1),
+
                         borderRadius: BorderRadius.circular(8),
                       ),
+
                       child: const Icon(Icons.language, color: Colors.blue),
                     ),
+
                     title: Text(
-                      '${item['nama_domain']}.desa.id',
+                      '${item['nama_domain']}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
                     ),
+
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 8),
+
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+
                         children: [
                           Text(
                             'Nama Desa: ${item['nama_desa'] ?? '-'}',
                             style: const TextStyle(fontSize: 12),
                           ),
+
                           const SizedBox(height: 4),
+
                           Text(
-                            'Masa Aktif: ${item['aktivasi_terakhir']?['masa_berlaku'] ?? '-'}',
+                            'Masa Aktif: ${formatTanggal(masa)}',
+
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.orange,
@@ -119,14 +140,17 @@ class _DaftarDomainPageState extends State<DaftarDomainPage> {
                         ],
                       ),
                     ),
+
                     trailing: const Icon(
                       Icons.arrow_forward_ios,
                       size: 16,
                       color: Colors.grey,
                     ),
+
                     onTap: () {
                       Navigator.push(
                         context,
+
                         MaterialPageRoute(
                           builder: (_) => DetailDomainPage(data: item),
                         ),

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../../main.dart';
 import '../../services/local_auth_service.dart';
 import '../../services/pengajuan_service.dart';
-
+import '../../services/perpanjangan_service.dart'; // ✅ Pastikan Service Perpanjangan di-import
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/bukti_sudah_upload_widget.dart';
 import '../../widgets/faktur_header_widget.dart';
@@ -34,6 +34,7 @@ class DetailFakturPage extends StatefulWidget {
 
   final String buktiPembayaranUrl;
   final String fakturStatus;
+  final String tipeFaktur;
 
   const DetailFakturPage({
     super.key,
@@ -50,6 +51,7 @@ class DetailFakturPage extends StatefulWidget {
     required this.harga,
     this.buktiPembayaranUrl = '',
     this.fakturStatus = '',
+    this.tipeFaktur = 'baru',
   });
 
   @override
@@ -59,7 +61,6 @@ class DetailFakturPage extends StatefulWidget {
 class _DetailFakturPageState extends State<DetailFakturPage> {
   String namaInstansi = '-';
   String emailUser = '-';
-  String alamatKantor = '-';
 
   String namaFile = '';
   File? selectedFile;
@@ -82,10 +83,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
 
       setState(() {
         namaInstansi = user['namaDesa'] ?? widget.fullName;
-
         emailUser = user['email'] ?? '-';
-
-        alamatKantor = user['alamat'] ?? '-';
       });
     } catch (e) {
       if (!mounted) return;
@@ -93,7 +91,6 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
       setState(() {
         namaInstansi = widget.fullName;
         emailUser = '-';
-        alamatKantor = '-';
       });
     }
   }
@@ -107,7 +104,6 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
     if (result != null && result.files.single.path != null) {
       setState(() {
         selectedFile = File(result.files.single.path!);
-
         namaFile = result.files.single.name;
       });
     }
@@ -125,9 +121,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
         content: Row(
           children: [
             Icon(icon, color: Colors.white),
-
             const SizedBox(width: 10),
-
             Expanded(
               child: Text(
                 message,
@@ -150,7 +144,6 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
         color: Colors.red,
         icon: Icons.warning,
       );
-
       return;
     }
 
@@ -159,10 +152,18 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
     });
 
     try {
-      await PengajuanService().uploadBuktiPembayaran(
-        idPengajuan: widget.idPengajuan,
-        filePath: selectedFile!.path,
-      );
+      if (widget.tipeFaktur == 'perpanjangan' ||
+          widget.jenisAplikasi.toLowerCase().contains('perpanjangan')) {
+        await PerpanjanganService.uploadBuktiPembayaran(
+          idPengajuan: widget.idPengajuan,
+          filePath: selectedFile!.path,
+        );
+      } else {
+        await PengajuanService().uploadBuktiPembayaran(
+          idPengajuan: widget.idPengajuan,
+          filePath: selectedFile!.path,
+        );
+      }
 
       if (!mounted) return;
 
@@ -184,7 +185,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
       );
     } catch (e) {
       _showSnackBar(
-        message: 'Upload gagal',
+        message: 'Upload gagal: $e',
         color: Colors.red,
         icon: Icons.error,
       );
@@ -212,28 +213,23 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-
       body: Column(
         children: [
           Container(
             width: double.infinity,
             padding: EdgeInsets.fromLTRB(16, topSafe + 10, 16, 14),
-
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFFE01925), Color(0xFF9F151B)],
               ),
             ),
-
             child: Row(
               children: [
                 InkWell(
                   onTap: () => Navigator.pop(context),
                   child: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
-
                 const SizedBox(width: 12),
-
                 const Text(
                   'Detail Faktur',
                   style: TextStyle(
@@ -245,30 +241,23 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
               ],
             ),
           ),
-
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
-
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-
                 children: [
                   FakturHeaderWidget(
                     invoiceNumber: widget.invoiceNumber,
                     tanggalTerbit: widget.tanggalTerbit,
                     tanggalKadaluarsa: widget.tanggalKadaluarsa,
                   ),
-
                   const SizedBox(height: 20),
-
                   const Text(
                     'Instansi',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-
                   const SizedBox(height: 6),
-
                   Text(
                     namaInstansi,
                     style: const TextStyle(
@@ -276,48 +265,32 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   const SizedBox(height: 4),
-
                   Text(emailUser),
-
-                  const SizedBox(height: 4),
-
-                  Text(alamatKantor),
-
                   const SizedBox(height: 20),
-
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border.all(color: Colors.grey.shade300),
                     ),
-
                     child: Column(
                       children: [
                         FakturInfoRow(
                           title: 'Nama Domain',
                           value: widget.namaDomain,
                         ),
-
                         FakturInfoRow(
-                          title: 'Jenis Aplikasi',
+                          title: 'Tipe Faktur',
                           value: widget.jenisAplikasi,
                         ),
-
                         FakturInfoRow(title: 'Durasi', value: widget.durasi),
-
                         FakturInfoRow(title: 'Harga', value: widget.harga),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
                   const RekeningWidget(),
-
                   const SizedBox(height: 24),
-
                   buktiSudahDikirim
                       ? BuktiSudahUploadWidget(onLihatBukti: _lihatBukti)
                       : UploadBuktiWidget(
@@ -332,7 +305,6 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
           ),
         ],
       ),
-
       bottomNavigationBar: AppBottomNav(
         currentIndex: 2,
         idUser: widget.idUser,

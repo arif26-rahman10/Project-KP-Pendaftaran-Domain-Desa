@@ -75,10 +75,14 @@ class _AdminPerpanjangPageState extends State<AdminPerpanjangPage> {
         backgroundColor: const Color(0xFFE01925),
         title: const Text(
           'Pengajuan Perpanjang Domain',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -189,7 +193,7 @@ class _AdminPerpanjangPageState extends State<AdminPerpanjangPage> {
                                     return DataRow(
                                       cells: [
                                         DataCell(Text('${index + 1}')),
-                                        DataCell(Text('$namaDomain.desa.id')),
+                                        DataCell(Text('$namaDomain')),
                                         DataCell(Text(namaDesa)),
                                         DataCell(
                                           Text(
@@ -200,9 +204,7 @@ class _AdminPerpanjangPageState extends State<AdminPerpanjangPage> {
                                         ),
                                         DataCell(
                                           ElevatedButton.icon(
-                                            icon: const Icon(
-                                              Icons.visibility,
-                                            ), // ← Ganti Icons.eye dengan Icons.visibility
+                                            icon: const Icon(Icons.visibility),
                                             label: const Text('Detail'),
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: kPrimary,
@@ -285,6 +287,7 @@ class AdminPerpanjangDetailModal extends StatefulWidget {
 class _AdminPerpanjangDetailModalState
     extends State<AdminPerpanjangDetailModal> {
   bool loading = true;
+  bool isProcessing = false;
   Map<String, dynamic>? faktur;
 
   @override
@@ -295,25 +298,37 @@ class _AdminPerpanjangDetailModalState
 
   Future<void> loadFaktur() async {
     try {
+      if (!mounted) return;
+
+      setState(() {
+        loading = true;
+      });
+
       final data = await PerpanjanganService.getDetailFaktur(
         widget.idPengajuan,
       );
 
-      if (mounted) {
-        setState(() {
-          faktur = data['data'];
-          loading = false;
-        });
-      }
+      if (!mounted) return;
+
+      setState(() {
+        // ✅ PENTING: Hanya set faktur jika success == true
+        if (data['success'] == true && data['data'] != null) {
+          faktur = data['data'] as Map<String, dynamic>;
+        } else {
+          faktur = null; // ← Pastikan null jika belum ada
+        }
+
+        loading = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          loading = false;
-        });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
-      }
+      if (!mounted) return;
+
+      print('Error loading faktur: $e');
+
+      setState(() {
+        faktur = null;
+        loading = false;
+      });
     }
   }
 
@@ -328,98 +343,217 @@ class _AdminPerpanjangDetailModalState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ===== HEADER =====
-                  Text(
-                    'Detail Perpanjangan',
-                    style: Theme.of(context).textTheme.headlineSmall,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Detail Perpanjangan',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Icon(Icons.close, color: Colors.grey.shade600),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
-                  // ===== INFO =====
-                  _buildInfoRow('Domain', '${widget.namaDomain}.desa.id'),
-                  _buildInfoRow('Desa', widget.namaDesa),
+                  // ===== INFO SECTION =====
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        left: BorderSide(color: kPrimary, width: 4),
+                      ),
+                      color: Colors.grey.shade50,
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInfoRow('Domain', '${widget.namaDomain}.desa.id'),
+                        const SizedBox(height: 12),
+                        _buildInfoRow('Nama Desa', widget.namaDesa),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ===== FAKTUR SECTION =====
                   if (faktur != null) ...[
-                    _buildInfoRow('No. Faktur', faktur!['no_faktur'] ?? '-'),
-                    _buildInfoRow(
-                      'Jumlah',
-                      'Rp ${faktur!['jumlah']?.toString() ?? '0'}',
+                    Text(
+                      'Informasi Faktur',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    _buildInfoRow(
-                      'Status Faktur',
-                      _getStatusBadge(faktur!['status'] ?? ''),
-                    ),
-                    _buildInfoRow(
-                      'Tgl Faktur',
-                      faktur!['created_at']?.toString().substring(0, 10) ?? '-',
+                    const SizedBox(height: 16),
+                    Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildInfoRow(
+                              'No. Faktur',
+                              faktur!['no_invoice'] ?? '-',
+                            ),
+                            const SizedBox(height: 12),
+                            _buildInfoRow(
+                              'Total Pembayaran',
+                              'Rp ${(faktur!['total'] ?? 0).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}',
+                            ),
+                            const SizedBox(height: 12),
+                            _buildInfoRow(
+                              'Status',
+                              _getStatusBadge(faktur!['status'] ?? ''),
+                            ),
+                            const SizedBox(height: 12),
+                            _buildInfoRow(
+                              'Tanggal Faktur',
+                              faktur!['created_at']?.toString().substring(
+                                    0,
+                                    10,
+                                  ) ??
+                                  '-',
+                            ),
+                            if (faktur!['expired_at'] != null)
+                              Column(
+                                children: [
+                                  const SizedBox(height: 12),
+                                  _buildInfoRow(
+                                    'Tanggal Kadaluarsa',
+                                    faktur!['expired_at']?.toString().substring(
+                                          0,
+                                          10,
+                                        ) ??
+                                        '-',
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                   const SizedBox(height: 24),
 
                   // ===== ACTION BUTTONS =====
-                  if (faktur != null && faktur!['status'] == 'belum_bayar')
+                  if (faktur == null)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: kPrimary,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        onPressed: () => _buatFaktur(),
-                        child: const Text('Buat Faktur Perpanjangan'),
+                        onPressed: isProcessing ? null : () => _buatFaktur(),
+                        child: isProcessing
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Text(
+                                'Buat Faktur Perpanjangan',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       ),
                     )
-                  else if (faktur != null &&
-                      faktur!['status'] == 'menunggu_verifikasi')
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            onPressed: () => _verifikasiPembayaran(),
-                            child: const Text('Verifikasi'),
+                  else if (faktur!['status'] == 'belum_bayar')
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey.shade400,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Tolak'),
+                        onPressed: null,
+                        child: const Text(
+                          'Menunggu Pembayaran dari Desa',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ],
+                      ),
                     )
-                  else if (faktur != null && faktur!['status'] == 'sudah_bayar')
+                  else if (faktur!['status'] == 'sudah_bayar')
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: isProcessing
+                            ? null
+                            : () => _aktivasiDomain(),
+                        child: isProcessing
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Text(
+                                'Aktivasi Domain Perpanjangan',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                  if (faktur != null)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey.shade200,
+                          foregroundColor: Colors.grey.shade700,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        onPressed: () => _aktivasiDomain(),
-                        child: const Text('Aktivasi Domain'),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text(
+                          'Refresh Data',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        onPressed: () => loadFaktur(),
                       ),
                     ),
                 ],
@@ -429,35 +563,33 @@ class _AdminPerpanjangDetailModalState
   }
 
   Widget _buildInfoRow(String label, dynamic value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey,
-              ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
             ),
           ),
-          Expanded(
-            child: value is Widget
-                ? value
-                : Text(
-                    value.toString(),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
+        ),
+        Expanded(
+          child: value is Widget
+              ? value
+              : Text(
+                  value.toString(),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                   ),
-          ),
-        ],
-      ),
+                ),
+        ),
+      ],
     );
   }
 
@@ -465,103 +597,124 @@ class _AdminPerpanjangDetailModalState
     Color bgColor;
     Color textColor;
     String label;
+    IconData icon;
 
     switch (status) {
       case 'belum_bayar':
         bgColor = Colors.yellow.shade100;
         textColor = Colors.yellow.shade700;
         label = 'Belum Bayar';
-        break;
-      case 'menunggu_verifikasi':
-        bgColor = Colors.blue.shade100;
-        textColor = Colors.blue.shade700;
-        label = 'Menunggu Verifikasi';
+        icon = Icons.schedule;
         break;
       case 'sudah_bayar':
         bgColor = Colors.green.shade100;
         textColor = Colors.green.shade700;
         label = 'Sudah Bayar';
+        icon = Icons.check_circle;
         break;
       default:
         bgColor = Colors.grey.shade100;
         textColor = Colors.grey.shade700;
         label = status;
+        icon = Icons.info;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: textColor,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: textColor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Future<void> _buatFaktur() async {
+    setState(() {
+      isProcessing = true;
+    });
+
     try {
       final result = await PerpanjanganService.buatFaktur(widget.idPengajuan);
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(result['message'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
         widget.onSuccess();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
-    }
-  }
-
-  Future<void> _verifikasiPembayaran() async {
-    try {
-      final result = await PerpanjanganService.verifikasiPembayaran(
-        widget.idPengajuan,
-      );
-
+    } finally {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(result['message'])));
-        loadFaktur();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+        setState(() {
+          isProcessing = false;
+        });
       }
     }
   }
 
   Future<void> _aktivasiDomain() async {
+    setState(() {
+      isProcessing = true;
+    });
+
     try {
       final result = await PerpanjanganService.aktivasiPerpanjangan(
         widget.idPengajuan,
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(result['message'])));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
         widget.onSuccess();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isProcessing = false;
+        });
       }
     }
   }

@@ -7,8 +7,21 @@ class DetailDomainPage extends StatelessWidget {
 
   const DetailDomainPage({super.key, required this.data});
 
+  // =========================
+  // FORMAT TANGGAL
+  // =========================
+  String formatTanggal(String? value) {
+    if (value == null) return '-';
+
+    final date = DateTime.parse(value);
+
+    return "${date.day}-${date.month}-${date.year}";
+  }
+
   @override
   Widget build(BuildContext context) {
+    final masaAktif = data['aktivasi_terakhir']?['masa_berlaku'];
+
     return Scaffold(
       appBar: AppBar(title: const Text('Detail Domain')),
 
@@ -20,16 +33,22 @@ class DetailDomainPage extends StatelessWidget {
 
           children: [
             Text(
-              '${data['nama_domain']}.desa.id',
-
+              '${data['nama_domain']}',
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
 
             Text(
-              'Masa aktif: '
-              '${data['aktivasi']?['masa_berlaku'] ?? '-'}',
+              'Nama Desa: '
+              '${data['nama_desa'] ?? '-'}',
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              'Masa Aktif: '
+              '${formatTanggal(masaAktif)}',
             ),
 
             const SizedBox(height: 30),

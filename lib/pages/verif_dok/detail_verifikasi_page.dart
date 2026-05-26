@@ -4,6 +4,7 @@ import '../../services/local_auth_service.dart';
 import '../admin/domain/pdf_network_page.dart';
 import '../faktur/detail_faktur_page.dart';
 import 'edit_pengajuan_page.dart';
+import '../../services/pengajuan_service.dart';
 
 class DetailVerifikasiPage extends StatelessWidget {
   final int idUser;
@@ -18,6 +19,7 @@ class DetailVerifikasiPage extends StatelessWidget {
     final user = await LocalAuthService.getRegisteredUser();
 
     final fullName = user['fullName']?.toString() ?? item.namaDesa;
+
     final username = user['username']?.toString() ?? '-';
 
     if (!context.mounted) return;
@@ -27,9 +29,11 @@ class DetailVerifikasiPage extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           title: const Text("Lanjutkan Pembayaran"),
+
           content: const Text(
             "Apakah Anda ingin melanjutkan ke proses pembayaran?",
           ),
+
           actions: [
             TextButton(
               onPressed: () {
@@ -37,33 +41,78 @@ class DetailVerifikasiPage extends StatelessWidget {
               },
               child: const Text("Tidak"),
             ),
+
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
-              onPressed: () {
+
+              onPressed: () async {
                 Navigator.pop(context);
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DetailFakturPage(
-                      idPengajuan: item.id,
-                      idUser: idUser,
-                      fullName: fullName,
-                      username: username,
-                      invoiceNumber: "INV-${item.id}",
-                      tanggalTerbit: item.tanggal,
-                      tanggalKadaluarsa: "-",
-                      namaDomain: "${item.domain}.desa.id",
-                      jenisAplikasi: "Registrasi Domain",
-                      durasi: "1 Tahun",
-                      harga: "Rp.50.000",
+                try {
+                  // =========================
+                  // AMBIL / BUAT FAKTUR
+                  // =========================
+                  final faktur = await PengajuanService().lanjutkanPembayaran(
+                    item.id,
+                  );
+
+                  if (!context.mounted) return;
+
+                  // =========================
+                  // BUKA HALAMAN FAKTUR
+                  // =========================
+                  Navigator.push(
+                    context,
+
+                    MaterialPageRoute(
+                      builder: (_) => DetailFakturPage(
+                        idPengajuan: item.id,
+
+                        idUser: idUser,
+
+                        fullName: fullName,
+
+                        username: username,
+
+                        invoiceNumber: faktur['no_invoice']?.toString() ?? '-',
+
+                        tanggalTerbit: faktur['created_at']?.toString() ?? '-',
+
+                        tanggalKadaluarsa:
+                            faktur['expired_at']?.toString() ?? '-',
+
+                        namaDomain:
+                            faktur['nama_domain']?.toString() ?? item.domain,
+
+                        jenisAplikasi: "Registrasi Domain",
+
+                        durasi: "1 Tahun",
+
+                        harga: "Rp.${faktur['total']}",
+
+                        buktiPembayaranUrl:
+                            faktur['bukti_pembayaran_path']?.toString() ?? '',
+
+                        fakturStatus: faktur['status']?.toString() ?? '',
+                      ),
                     ),
-                  ),
-                );
+                  );
+                } catch (e) {
+                  if (!context.mounted) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: Colors.red,
+
+                      content: Text("Gagal membuat faktur: $e"),
+                    ),
+                  );
+                }
               },
+
               child: const Text("Ya"),
             ),
           ],

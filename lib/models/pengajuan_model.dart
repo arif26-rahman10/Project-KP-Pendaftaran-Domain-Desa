@@ -22,6 +22,9 @@ class Pengajuan {
   final String buktiPembayaranUrl;
   final String noInvoice;
   final String totalFaktur;
+  final String expiredAt;
+  final String tipeFaktur;
+  final String tanggalFaktur;
 
   final Map<String, String> dokumenUrls;
 
@@ -46,6 +49,9 @@ class Pengajuan {
     required this.noInvoice,
     required this.totalFaktur,
     required this.dokumenUrls,
+    required this.expiredAt,
+    required this.tipeFaktur,
+    required this.tanggalFaktur,
   });
 
   factory Pengajuan.fromJson(Map<String, dynamic> json) {
@@ -66,16 +72,17 @@ class Pengajuan {
     String buktiPembayaranUrl = '';
     String noInvoice = '';
     String totalFaktur = '';
+    String tipeFaktur = '';
+    String tanggalFaktur = '';
 
     final fakturRaw = json['faktur'];
     Map<String, dynamic>? faktur;
 
-    // Karena Laravel pakai hasMany, faktur bisa berbentuk List
+    // ambil faktur terbaru
     if (fakturRaw is List && fakturRaw.isNotEmpty) {
       faktur = Map<String, dynamic>.from(fakturRaw.first);
     }
 
-    // Pengaman kalau suatu saat API mengirim object
     if (fakturRaw is Map) {
       faktur = Map<String, dynamic>.from(fakturRaw);
     }
@@ -84,6 +91,10 @@ class Pengajuan {
       fakturStatus = faktur['status']?.toString() ?? '';
       noInvoice = faktur['no_invoice']?.toString() ?? '';
       totalFaktur = faktur['total']?.toString() ?? '';
+
+      tipeFaktur = faktur['tipe']?.toString() ?? '';
+
+      tanggalFaktur = faktur['created_at']?.toString().substring(0, 10) ?? '';
 
       final buktiPath = faktur['bukti_pembayaran_path']?.toString() ?? '';
 
@@ -114,7 +125,10 @@ class Pengajuan {
       buktiPembayaranUrl: buktiPembayaranUrl,
       noInvoice: noInvoice,
       totalFaktur: totalFaktur,
+      expiredAt: faktur?['expired_at']?.toString() ?? '',
       dokumenUrls: dokumenMap,
+      tipeFaktur: tipeFaktur,
+      tanggalFaktur: tanggalFaktur,
     );
   }
 }

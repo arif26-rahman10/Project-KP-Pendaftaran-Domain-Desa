@@ -98,6 +98,20 @@ class PengajuanService {
     }
   }
 
+  // ================= GET DETAIL FAKTUR PENGAJUAN =================
+  Future<Map<String, dynamic>> getDetailFakturPengajuan(int idPengajuan) async {
+    try {
+      final res = await dio.get("/pengajuan/detail-faktur/$idPengajuan");
+
+      print("GET DETAIL FAKTUR PENGAJUAN: ${res.data}");
+
+      return Map<String, dynamic>.from(res.data);
+    } catch (e) {
+      print("ERROR GET DETAIL FAKTUR PENGAJUAN: $e");
+      return {'success': false, 'message': e.toString(), 'data': null};
+    }
+  }
+
   // ================= RIWAYAT USER / VERIFIKASI DOKUMEN =================
   Future<List<Pengajuan>> getPengajuanUser() async {
     try {
@@ -230,7 +244,7 @@ class PengajuanService {
   }
 
   // ================= LANJUTKAN PEMBAYARAN =================
-  Future<void> lanjutkanPembayaran(int idPengajuan) async {
+  Future<Map<String, dynamic>> lanjutkanPembayaran(int idPengajuan) async {
     try {
       final res = await dio.post(
         "/pengajuan/$idPengajuan/lanjutkan-pembayaran",
@@ -238,11 +252,14 @@ class PengajuanService {
 
       print("LANJUTKAN PEMBAYARAN RESPONSE: ${res.data}");
 
-      if (res.data['success'] != true) {
-        throw Exception(res.data['message'] ?? "Gagal membuat faktur");
+      if (res.data['success'] == true) {
+        return Map<String, dynamic>.from(res.data['data']);
       }
+
+      throw Exception(res.data['message'] ?? "Gagal membuat faktur");
     } catch (e) {
       print("ERROR LANJUTKAN PEMBAYARAN: $e");
+
       throw Exception("Gagal lanjut pembayaran");
     }
   }

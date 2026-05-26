@@ -46,12 +46,19 @@ class _FakturPageState extends State<FakturPage> {
 
     setState(() {
       listFaktur = data.where((item) {
-        // HARUS PUNYA FAKTUR
         final punyaFaktur =
             item.noInvoice.isNotEmpty || item.fakturStatus.isNotEmpty;
 
         return punyaFaktur;
       }).toList();
+
+      // SORT TERBARU -> TERLAMA
+      listFaktur.sort((a, b) {
+        final dateA = DateTime.tryParse(a.tanggalFaktur) ?? DateTime(2000);
+        final dateB = DateTime.tryParse(b.tanggalFaktur) ?? DateTime(2000);
+
+        return dateB.compareTo(dateA);
+      });
 
       isLoading = false;
     });
@@ -99,7 +106,7 @@ class _FakturPageState extends State<FakturPage> {
     final invoice = item.noInvoice.isNotEmpty
         ? item.noInvoice
         : "INV-${item.id}";
-    final domain = "${item.domain}.desa.id";
+    final domain = item.domain;
 
     final bool buktiSudahDikirim =
         item.buktiPembayaranUrl.isNotEmpty ||
@@ -118,10 +125,14 @@ class _FakturPageState extends State<FakturPage> {
               fullName: widget.fullName,
               username: widget.username,
               invoiceNumber: invoice,
-              tanggalTerbit: item.tanggal,
-              tanggalKadaluarsa: "-",
+              tanggalTerbit: item.tanggalFaktur,
+              tanggalKadaluarsa: item.expiredAt.isNotEmpty
+                  ? item.expiredAt
+                  : "-",
               namaDomain: domain,
-              jenisAplikasi: "Registrasi Domain",
+              jenisAplikasi: item.tipeFaktur == 'perpanjangan'
+                  ? 'Perpanjangan Domain'
+                  : 'Registrasi Domain',
               durasi: "1 Tahun",
               harga: item.totalFaktur.isNotEmpty
                   ? "Rp.${item.totalFaktur}"
@@ -162,7 +173,9 @@ class _FakturPageState extends State<FakturPage> {
             Text(invoice, style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             Text("Nama Domain : $domain"),
-            Text("Tanggal Terbit : ${item.tanggal}"),
+            Text(
+              "Tanggal Terbit : ${item.tanggalFaktur.isNotEmpty ? item.tanggalFaktur : '-'}",
+            ),
             const SizedBox(height: 6),
             Text(
               buktiSudahDikirim

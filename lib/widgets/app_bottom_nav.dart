@@ -53,7 +53,7 @@ class AppBottomNav extends StatelessWidget {
         return;
     }
 
-    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
   }
 
   Widget _navItem(

@@ -114,7 +114,7 @@ class _DetailFakturPageState extends State<DetailFakturPage> {
               // ================= DETAIL =================
               item("Nama Desa", itemData.namaDesa),
 
-              item("Nama Domain", "${itemData.namaDomain}.desa.id"),
+              item("Nama Domain", itemData.namaDomain),
 
               item("Status Pembayaran", itemData.status),
 

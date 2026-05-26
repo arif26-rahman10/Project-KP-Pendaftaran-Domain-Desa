@@ -233,14 +233,13 @@ class _Step4PratinjauState extends State<Step4Pratinjau> {
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
                           builder: (_) =>
                               VerifikasiDokumenPage(idUser: widget.idUser),
                         ),
-                        (route) => false,
+                        (route) => route.isFirst,
                       );
                     },
                     child: const Text("Lanjut"),

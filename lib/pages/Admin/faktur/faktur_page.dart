@@ -121,7 +121,7 @@ class _AdminFakturPageState extends State<AdminFakturPage> {
 
                       children: [
                         Text(
-                          "${item.namaDomain}.desa.id",
+                          item.namaDomain,
                           style: const TextStyle(color: Colors.black87),
                         ),
 

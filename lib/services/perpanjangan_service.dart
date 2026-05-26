@@ -78,7 +78,7 @@ class PerpanjanganService {
   }
 
   // =========================
-  // USER - GET DETAIL FAKTUR
+  // USER/ADMIN - GET DETAIL FAKTUR
   // =========================
   static Future<Map<String, dynamic>> getDetailFaktur(int idPengajuan) async {
     try {
@@ -87,14 +87,19 @@ class PerpanjanganService {
         headers: await ApiHelper.headers(),
       );
 
-      if (response.statusCode != 200) {
-        throw Exception('Faktur tidak ditemukan');
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        return {
+          'success': false,
+          'message': 'Gagal memuat faktur',
+          'data': null,
+        };
       }
-
-      return jsonDecode(response.body);
     } catch (e) {
       print('Error getDetailFaktur: $e');
-      rethrow;
+      return {'success': false, 'message': e.toString(), 'data': null};
     }
   }
 

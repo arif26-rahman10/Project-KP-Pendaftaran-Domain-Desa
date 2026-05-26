@@ -32,7 +32,7 @@ class RekeningWidget extends StatelessWidget {
 
         SizedBox(height: 4),
 
-        Text('xxxxxxxxxxxxx'),
+        Text('88-888-888'),
       ],
     );
   }
